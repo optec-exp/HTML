@@ -30,22 +30,6 @@
       padding: 40px;
     }
 
-    /* 响应式背景图：根据屏幕大小加载不同的背景图 */
-    @media (max-width: 480px) {
-      body {
-        background: url('https://i.imgur.com/lowres.jpg') no-repeat center center fixed; /* 使用较低分辨率图片 */
-        background-size: cover;
-      }
-    }
-
-    @media (min-width: 481px) and (max-width: 1024px) {
-      body {
-        background: url('https://i.imgur.com/mediumres.jpg') no-repeat center center fixed; /* 使用中等分辨率图片 */
-        background-size: cover;
-      }
-    }
-
-    /* 容器：中心定位 */
     .container {
       width: 100%;
       max-width: 480px;
@@ -68,11 +52,10 @@
       align-items: center;
     }
 
-    /* 图标样式 */
     .icon {
       margin-right: 10px;
-      font-size: 32px; /* 图标大小 */
-      color: #0071e3; /* 设置图标颜色 */
+      font-size: 32px;
+      color: #0071e3;
     }
 
     label {
@@ -95,7 +78,7 @@
     }
 
     input[type="text"]:focus {
-      border-color: #0071e3; /* 高亮效果 */
+      border-color: #0071e3;
       outline: none;
       background: #fff;
     }
@@ -122,7 +105,6 @@
       .container {
         padding: 20px;
       }
-
       h1 {
         font-size: 24px;
       }
@@ -142,7 +124,7 @@
 
       <!-- 案件番号（只读） -->
       <label for="案件番号">案件番号：</label>
-      <input type="text" id="案件番号" name="案件番号" readonly>
+      <input type="text" id="案件番号Display" name="案件番号" readonly>
 
       <!-- 公司名（只读） -->
       <label for="公司名">公司名：</label>
@@ -176,12 +158,14 @@
     // 页面加载后执行，填充表单
     window.addEventListener('DOMContentLoaded', () => {
       const params = getQueryParams();
+      console.log(params);  // 打印查询参数，检查是否正确
+
       if (params.案件番号) {
         document.getElementById('案件番号').value = params.案件番号;  // 填充案件番号
         document.getElementById('案件番号Display').value = params.案件番号;  // 显示案件番号
       }
       if (params.公司名) {
-        document.getElementById('公司名').value = params.公司名;
+        document.getElementById('公司名').value = params.公司名;  // 填充公司名
       }
     });
 
@@ -192,17 +176,17 @@
       const 案件番号 = document.getElementById('案件番号').value;
       const newEmail = document.getElementById('newEmail').value;
 
-      // 构建API请求数据
+      // 根据案件番号查找记录并更新
       const data = {
         app: 922,  // 替换为你kintone应用ID
-        query: `案件番号="${案件番号}"`, 
+        query: `案件番号="${案件番号}"`, // 使用案件番号查找对应的记录
         record: {
           mailchange: { value: newEmail }  // 更新kintone记录中的mail字段
         }
       };
 
       // 使用fetch调用kintone API
-      fetch("https://{subdomain}.cybozu.com/k/v1/record.json", {
+      fetch("https://{subdomain}.cybozu.com/k/v1/records.json", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
