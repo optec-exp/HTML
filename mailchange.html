@@ -30,6 +30,21 @@
       padding: 40px;
     }
 
+    /* 响应式背景图：根据屏幕大小加载不同的背景图 */
+    @media (max-width: 480px) {
+      body {
+        background: url('https://i.imgur.com/lowres.jpg') no-repeat center center fixed; /* 使用较低分辨率图片 */
+        background-size: cover;
+      }
+    }
+
+    @media (min-width: 481px) and (max-width: 1024px) {
+      body {
+        background: url('https://i.imgur.com/mediumres.jpg') no-repeat center center fixed; /* 使用中等分辨率图片 */
+        background-size: cover;
+      }
+    }
+
     /* 容器：中心定位 */
     .container {
       width: 100%;
@@ -181,10 +196,10 @@
 
       // 构建API请求数据
       const data = {
-        app: YOUR_APP_ID,  // 替换为你kintone应用ID
+        app: 922,  // 替换为你kintone应用ID
         id: recordId,
         record: {
-          mail: { value: newEmail }  // 更新kintone记录中的mail字段
+          mailchange: { value: newEmail }  // 更新kintone记录中的mail字段
         }
       };
 
@@ -193,7 +208,7 @@
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "X-Cybozu-API-Token": "YOUR_API_TOKEN"  // 替换为API Token
+          "X-Cybozu-API-Token": "KtHPEeEyRoFa5PcvEibNbTN5XfNBL1Pytkmw0q5e"  // 替换为API Token
         },
         body: JSON.stringify(data)
       })
