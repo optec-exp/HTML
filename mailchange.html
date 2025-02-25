@@ -176,32 +176,24 @@
       const 案件番号 = document.getElementById('案件番号').value;
       const newEmail = document.getElementById('newEmail').value;
 
-      // 根据案件番号查找记录并更新
-      const data = {
-        app: 922,  // 替换为你kintone应用ID
-        query: `案件番号="${案件番号}"`, // 使用案件番号查找对应的记录
-        record: {
-          mailchange: { value: newEmail }  // 更新kintone记录中的mail字段
-        }
-      };
+      // 将数据传递给 Google Apps Script
+      const data = new FormData();
+      data.append('案件番号', 案件番号);
+      data.append('newEmail', newEmail);
 
-      // 使用fetch调用kintone API
-      fetch("https://si8qxbanrfkx.cybozu.com/k/v1/records.json", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Cybozu-API-Token": "KtHPEeEyRoFa5PcvEibNbTN5XfNBL1Pytkmw0q5e"  // 替换为API Token
-        },
-        body: JSON.stringify(data)
+      // 向 GAS 发送请求
+      fetch('https://script.google.com/macros/s/AKfycbxq0yQyosfcZa6rbhYpgtT7FcIk4iEG5n_0Jc0IG3zFZdbjHVJ8H421ktlkRNRphD3tuQ/exec', {
+        method: 'POST',
+        body: data,
       })
       .then(response => response.json())
-      .then(result => {
-        console.log("更新成功：", result);
+      .then(data => {
+        console.log('成功更新：', data);
         alert("记录已成功更新！");
       })
       .catch(error => {
-        console.error("更新失败：", error);
-        alert("更新记录时出错，请检查控制台日志。");
+        console.error('更新失败：', error);
+        alert("更新记录时出错：" + error.message);
       });
     });
   </script>
