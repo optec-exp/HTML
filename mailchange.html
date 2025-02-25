@@ -137,8 +137,8 @@
       <i class="fas fa-exchange-alt icon"></i> 邮箱变更依赖
     </h1>
     <form id="updateForm">
-      <!-- 隐藏字段，存储kintone记录ID -->
-      <input type="hidden" id="recordId" name="recordId">
+      <!-- 隐藏字段，存储案件番号 -->
+      <input type="hidden" id="案件番号" name="案件番号">
 
       <!-- 案件番号（只读） -->
       <label for="案件番号">案件番号：</label>
@@ -176,11 +176,9 @@
     // 页面加载后执行，填充表单
     window.addEventListener('DOMContentLoaded', () => {
       const params = getQueryParams();
-      if (params.recordId) {
-        document.getElementById('recordId').value = params.recordId;
-      }
       if (params.案件番号) {
-        document.getElementById('案件番号').value = params.案件番号;
+        document.getElementById('案件番号').value = params.案件番号;  // 填充案件番号
+        document.getElementById('案件番号Display').value = params.案件番号;  // 显示案件番号
       }
       if (params.公司名) {
         document.getElementById('公司名').value = params.公司名;
@@ -191,13 +189,13 @@
     document.getElementById('updateForm').addEventListener('submit', function(event) {
       event.preventDefault();
 
-      const recordId = document.getElementById('recordId').value;
+      const 案件番号 = document.getElementById('案件番号').value;
       const newEmail = document.getElementById('newEmail').value;
 
       // 构建API请求数据
       const data = {
         app: 922,  // 替换为你kintone应用ID
-        id: recordId,
+        query: `案件番号="${案件番号}"`, 
         record: {
           mailchange: { value: newEmail }  // 更新kintone记录中的mail字段
         }
