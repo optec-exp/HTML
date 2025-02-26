@@ -117,30 +117,6 @@
       background-color: #005bb5;
     }
 
-    /* 新增状态容器样式 */
-    .status-container {
-      display: none;
-      text-align: center;
-      padding: 30px;
-    }
-
-    .loading-icon {
-      font-size: 40px;
-      margin-bottom: 20px;
-      animation: spin 1s linear infinite;
-    }
-
-    .success-icon {
-      font-size: 40px;
-      margin-bottom: 20px;
-      color: #28a745;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
     /* 移动端适配 */
     @media (max-width: 480px) {
       .container {
@@ -150,6 +126,27 @@
       h1 {
         font-size: 24px;
       }
+    }
+
+    /* 加载中的样式 */
+    .loading {
+      text-align: center;
+      margin-top: 20px;
+      color: #333;
+    }
+
+    .loading i {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    /* 成功消息样式 */
+    .success {
+      text-align: center;
+      margin-top: 20px;
+      color: #333;
+      font-size: 18px;
+      font-weight: 600;
     }
   </style>
 </head>
@@ -180,15 +177,15 @@
       <button type="submit">提交更新</button>
     </form>
 
-    <!-- 新增状态显示容器 -->
-    <div class="status-container" id="loadingStatus">
-      <i class="fas fa-spinner loading-icon"></i>
-      <h2>提交中...</h2>
+    <!-- 加载中的状态 -->
+    <div id="loading" class="loading" style="display: none;">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>提交中...</p>
     </div>
 
-    <div class="status-container" id="successStatus">
-      <i class="fas fa-check-circle success-icon"></i>
-      <h2>修改已成功提交！</h2>
+    <!-- 成功状态 -->
+    <div id="success" class="success" style="display: none;">
+      修改已成功提交！
     </div>
   </div>
 
@@ -216,7 +213,6 @@
       }
       if (params.案件番号) {
         document.getElementById('案件番号').value = params.案件番号;
-
       }
       if (params.公司名) {
         document.getElementById('公司名').value = params.公司名;
@@ -235,6 +231,10 @@
       data.append('recordId', recordId);
       data.append('newEmail', newEmail);
 
+      // 显示加载中状态，隐藏表单
+      document.getElementById('updateForm').style.display = 'none';
+      document.getElementById('loading').style.display = 'block';
+
       // 向 GAS 发送请求
       fetch('https://script.google.com/macros/s/AKfycbwZa_9QKaMW6SfoR8eHcLkRbH9oGdwaBl5zCSsDFCXd7Q082Bh2RhT7Jqk5XmRV0SRJ/exec', {
         method: 'POST',
@@ -243,10 +243,16 @@
       .then(response => response.json())
       .then(data => {
         console.log('成功更新：', data);
+        // 隐藏加载中状态，显示成功消息
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('success').style.display = 'block';
         alert("记录已成功更新！");
       })
       .catch(error => {
         console.error('更新失败：', error);
+        // 显示表单，隐藏加载中状态
+        document.getElementById('updateForm').style.display = 'block';
+        document.getElementById('loading').style.display = 'none';
         alert("更新记录时出错：" + error.message);
       });
     });
