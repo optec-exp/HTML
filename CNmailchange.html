@@ -148,6 +148,14 @@
       font-size: 18px;
       font-weight: 600;
     }
+
+    /* 提示信息样式 */
+    .input-tip {
+      display: block;
+      font-size: 14px;
+      color: #666;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -170,8 +178,9 @@
       <input type="text" id="公司名" name="公司名" readonly>
 
       <!-- 用户填写新邮箱 -->
-      <label for="newEmail">希望变更后的邮箱为（复数邮箱请用逗号分隔）：</label>
+      <label for="newEmail">希望变更后的邮箱为：</label>
       <input type="text" id="newEmail" name="newEmail" placeholder="例如：a@xx.com,b@xx.com" required>
+      <span class="input-tip">（复数邮箱请用逗号分隔）</span>
 
       <!-- 提交按钮 -->
       <button type="submit">提交更新</button>
