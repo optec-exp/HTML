@@ -203,14 +203,8 @@
       // 向 GAS 发送请求
       fetch('https://script.google.com/macros/s/AKfycbwyIr5-EFGDX_TV82l5BN3Bv1BsVeV5XwKgmkJQD6E4j_h7KEJcywSvAm6CHZjgSZo/exec', {
         method: 'POST',
-          body: JSON.stringify({  // 修改为发送JSON格式
-              recordId: recordId,
-              newEmail: newEmail
-            }),
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          })
+        body: data,
+      })
       .then(response => response.json())
       .then(data => {
         console.log('成功更新：', data);
