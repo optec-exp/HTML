@@ -154,70 +154,46 @@
   </div>
 
   <!-- JavaScript：解析URL参数，并通过 Google Apps Script 更新 kintone 记录 -->
-  <script>
-    // 解析URL查询参数的函数
-    function getQueryParams() {
-      const params = {};
-      const queryString = window.location.search.substring(1); // 去掉开头的'?'
-      const queries = queryString.split('&');
-      queries.forEach(function(query) {
-        const [key, value] = query.split('=');
-        if (key) {
-          // 将参数名和参数值解码并存储到对象中
-          params[decodeURIComponent(key)] = decodeURIComponent(value || '');
-        }
-      });
-      return params;
-    }
+<script>
+  document.getElementById('updateForm').addEventListener('submit', function(event) {
+    event.preventDefault();  // 阻止表单的默认提交行为
 
-    // 当页面加载完成后，执行初始化：将URL中的参数值填充到表单字段中
-    window.addEventListener('DOMContentLoaded', () => {
-      const params = getQueryParams();
-      console.log(params);  // 在控制台打印所有查询参数，供调试检查
+    // 获取用户输入的值
+    const 案件番号 = document.getElementById('案件番号').value;
+    const newEmail = document.getElementById('newEmail').value;
 
-      if (params.案件番号) {
-        // 如果 URL 中包含“案件番号”，则设置隐藏字段和显示字段的值
-        document.getElementById('案件番号').value = params.案件番号;       // 填充隐藏的案件番号字段
-        document.getElementById('案件番号Display').value = params.案件番号; // 在页面上显示案件番号
+    // 将数据打包成 FormData 格式（表单数据）
+    // 注意：不要手动设置 Content-Type 请求头，fetch 会自动根据 FormData 设置合适的内容类型
+    const data = new FormData();
+    data.append('案件番号', 案件番号);
+    data.append('newEmail', newEmail);
+
+    // 使用 fetch 向 Google Apps Script 部署的 Web 应用发送跨域 POST 请求
+    fetch('https://script.google.com/macros/s/AKfycbynKWRHxxahoTDvqdXCM_oePC2rSjmR6JdeNPVdOOUR3jmII4pt9ILDfJMciyx9-sI8lQ/exec', {
+      method: 'POST',
+      mode: 'cors',       // 明确指定跨域请求模式
+      body: data          // 将表单数据作为请求主体发送
+    })
+    .then(response => {
+      // 检查响应状态，确保服务器返回成功状态
+      if (!response.ok) {
+        throw new Error(`服务器返回错误状态: ${response.status}`);
       }
-      if (params.公司名) {
-        // 如果 URL 中包含“公司名”，则填充公司名字段
-        document.getElementById('公司名').value = params.公司名;
-      }
+      // 将返回结果解析为 JSON 对象
+      return response.json();
+    })
+    .then(result => {
+      // 处理成功的响应结果
+      console.log('成功更新：', result);       // 在控制台输出返回的结果（调试用）
+      alert("记录已成功更新！");               // 提示用户更新成功
+      // 可以根据 result 内容更新页面或执行其他操作
+    })
+    .catch(error => {
+      // 处理网络错误或服务器返回的错误
+      console.error('更新失败：', error);      // 在控制台输出错误信息
+      alert("更新记录时出错：" + error.message); // 提示用户发生了错误
     });
-
-    // 当提交表单时，通过 GAS 更新 kintone 记录
-    document.getElementById('updateForm').addEventListener('submit', function(event) {
-      event.preventDefault();  // 阻止表单的默认提交行为
-
-      // 获取用户输入的值
-      const 案件番号 = document.getElementById('案件番号').value;
-      const newEmail = document.getElementById('newEmail').value;
-
-      // 将数据打包成 FormData 格式（表单数据）
-      // 注意：不要手动设置 Content-Type 请求头，fetch 会自动为 FormData 设置合适的内容类型
-      // 这样请求属于简单请求，可避免触发浏览器的 CORS 预检（OPTIONS）请求
-      const data = new FormData();
-      data.append('案件番号', 案件番号);
-      data.append('newEmail', newEmail);
-
-      // 使用 fetch 向 Google Apps Script Web 应用发送 POST 请求
-      fetch('https://script.google.com/macros/s/AKfycbwyfxiGHCvhXnAObRppL98DOdNNjBYduG-_TkpexJ-CYMfTPRn7GK7e4Py362S4Z6CGNw/exec', {
-        method: 'POST',
-        body: data  // 将表单数据作为请求主体发送
-      })
-      .then(response => response.json())  // 将返回结果解析为 JSON
-      .then(result => {
-        // 处理成功响应结果
-        console.log('成功更新：', result);    // 在控制台输出返回的结果（调试用）
-        alert("记录已成功更新！");           // 提示用户更新成功
-      })
-      .catch(error => {
-        // 处理错误情况（例如网络错误或服务器错误）
-        console.error('更新失败：', error);   // 在控制台输出错误信息
-        alert("更新记录时出错：" + error.message);  // 提示用户发生了错误
-      });
-    });
-  </script>
+  });
+</script>
 </body>
 </html>
