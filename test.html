@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>邮箱变更依赖 - 更新 kintone 记录</title>
+
+  <!-- 引入 Font Awesome 图标库 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+  <!-- 内嵌CSS，用于实现 Apple 风格的设计 -->
+  <style>
+    /* 重置默认样式 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      background: url('https://i.imgur.com/jP3efp8.jpg') no-repeat center center fixed;
+      background-size: cover;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      color: #fff;
+      padding: 40px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(255, 255, 255, 0.8); /* 半透明白色背景 */
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px); /* 背景模糊效果 */
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 80px; /* 增加标题与表单的间距 */
+      font-weight: 500;
+      color: #333;
+      letter-spacing: 3px; /* 增加字母间距 */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .icon {
+      margin-right: 10px;
+      font-size: 32px;
+      color: #0071e3;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-size: 16px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      transition: all 0.3s;
+      background: #f8f8f8;
+    }
+
+    input[type="text"]:focus {
+      border-color: #0071e3;
+      outline: none;
+      background: #fff;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 14px;
+      margin-top: 30px;
+      background-color: #0071e3;
+      color: white;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #005bb5;
+    }
+
+    /* 移动端适配 */
+    @media (max-width: 480px) {
+      .container {
+        padding: 20px;
+      }
+      h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 外部容器，表单居中 -->
+  <div class="container">
+    <h1>
+      <i class="fas fa-exchange-alt icon"></i> 邮箱变更依赖
+    </h1>
+    <form id="updateForm">
+      <!-- 隐藏字段，存储案件番号 -->
+      <input type="hidden" id="案件番号" name="案件番号">
+
+      <!-- 案件番号（只读） -->
+      <label for="案件番号">案件番号：</label>
+      <input type="text" id="案件番号Display" name="案件番号" readonly>
+
+      <!-- 公司名（只读） -->
+      <label for="公司名">公司名：</label>
+      <input type="text" id="公司名" name="公司名" readonly>
+
+      <!-- 用户填写新邮箱 -->
+      <label for="newEmail">希望变更后的邮箱为（复数邮箱请用半角逗号分隔）：</label>
+      <input type="text" id="newEmail" name="newEmail" placeholder="例如：a@xx.com,b@xx.com" required>
+
+      <!-- 提交按钮 -->
+      <button type="submit">提交更新</button>
+    </form>
+  </div>
+
+  <!-- JavaScript：解析URL参数并更新kintone记录 -->
+  <script>
+    // 解析URL查询参数
+    function getQueryParams() {
+      const params = {};
+      const queryString = window.location.search.substring(1);
+      const queries = queryString.split('&');
+      queries.forEach(function(query) {
+        const [key, value] = query.split('=');
+        if (key) {
+          params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+        }
+      });
+      return params;
+    }
+
+    // 页面加载后执行，填充表单
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = getQueryParams();
+      console.log(params);  // 打印查询参数，检查是否正确
+
+      if (params.案件番号) {
+        document.getElementById('案件番号').value = params.案件番号;  // 填充案件番号
+        document.getElementById('案件番号Display').value = params.案件番号;  // 显示案件番号
+      }
+      if (params.公司名) {
+        document.getElementById('公司名').value = params.公司名;  // 填充公司名
+      }
+    });
+
+    // 提交表单时，更新kintone记录
+    document.getElementById('updateForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const 案件番号 = document.getElementById('案件番号').value;
+      const newEmail = document.getElementById('newEmail').value;
+
+      // 将数据传递给 Google Apps Script
+      const data = new FormData();
+      data.append('案件番号', 案件番号);
+      data.append('newEmail', newEmail);
+
+      // 向 GAS 发送请求
+      fetch('https://script.google.com/macros/s/AKfycbxzwmFlEgPQiENw2aq5V9coNDxKdXbLRY3LVlMD8vRZ7Mb7MSQB48Ov4HkvJYVQBrlQ9w/exec', {
+        method: 'POST',
+        body: data,
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('成功更新：', data);
+        alert("记录已成功更新！");
+      })
+      .catch(error => {
+        console.error('更新失败：', error);
+        alert("更新记录时出错：" + error.message);
+      });
+    });
+  </script>
+</body>
+</html>
