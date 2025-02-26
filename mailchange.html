@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>邮箱变更依赖 - 更新 kintone 记录</title>
 
-  <!-- 引入 Font Awesome 图标库 -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <!-- 引入 Font Awesome 图标库（用于显示交换图标） -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
-  <!-- 内嵌CSS，用于实现 Apple 风格的设计 -->
+  <!-- 内嵌CSS：设置页面样式为 Apple 风格 -->
   <style>
     /* 重置默认样式 */
     * {
@@ -30,10 +30,25 @@
       padding: 40px;
     }
 
+    /* 响应式背景图：根据屏幕大小加载不同清晰度的背景 */
+    @media (max-width: 480px) {
+      body {
+        background: url('https://i.imgur.com/lowres.jpg') no-repeat center center fixed; /* 移动设备用低分辨率图 */
+        background-size: cover;
+      }
+    }
+    @media (min-width: 481px) and (max-width: 1024px) {
+      body {
+        background: url('https://i.imgur.com/mediumres.jpg') no-repeat center center fixed; /* 平板设备用中等分辨率图 */
+        background-size: cover;
+      }
+    }
+
+    /* 容器样式：居中定位，带有半透明白色背景和圆角 */
     .container {
       width: 100%;
       max-width: 480px;
-      background: rgba(255, 255, 255, 0.8); /* 半透明白色背景 */
+      background: rgba(255, 255, 255, 0.8);
       padding: 30px;
       border-radius: 20px;
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
@@ -43,7 +58,7 @@
     h1 {
       text-align: center;
       font-size: 28px;
-      margin-bottom: 80px; /* 增加标题与表单的间距 */
+      margin-bottom: 80px; /* 标题与表单的间距 */
       font-weight: 500;
       color: #333;
       letter-spacing: 3px; /* 增加字母间距 */
@@ -52,10 +67,11 @@
       align-items: center;
     }
 
+    /* 图标样式 */
     .icon {
       margin-right: 10px;
-      font-size: 32px;
-      color: #0071e3;
+      font-size: 32px;   /* 图标大小 */
+      color: #0071e3;    /* 图标颜色 */
     }
 
     label {
@@ -76,9 +92,8 @@
       transition: all 0.3s;
       background: #f8f8f8;
     }
-
     input[type="text"]:focus {
-      border-color: #0071e3;
+      border-color: #0071e3; /* 获得焦点时高亮边框 */
       outline: none;
       background: #fff;
     }
@@ -95,12 +110,11 @@
       cursor: pointer;
       transition: all 0.3s;
     }
-
     button[type="submit"]:hover {
       background-color: #005bb5;
     }
 
-    /* 移动端适配 */
+    /* 移动端适配：缩小容器内边距和标题字号 */
     @media (max-width: 480px) {
       .container {
         padding: 20px;
@@ -113,87 +127,95 @@
 </head>
 <body>
 
-  <!-- 外部容器，表单居中 -->
+  <!-- 外部容器，使表单居中显示 -->
   <div class="container">
     <h1>
       <i class="fas fa-exchange-alt icon"></i> 邮箱变更依赖
     </h1>
     <form id="updateForm">
-      <!-- 隐藏字段，存储案件番号 -->
-      <input type="hidden" id="案件番号" name="案件番号">
+      <!-- 隐藏字段，存储案件番号（方便提交时使用） -->
+      <input type="hidden" id="案件番号" name="案件番号" />
 
-      <!-- 案件番号（只读） -->
-      <label for="案件番号">案件番号：</label>
-      <input type="text" id="案件番号Display" name="案件番号" readonly>
+      <!-- 案件番号（只读文本框，显示给用户） -->
+      <label for="案件番号Display">案件番号：</label>
+      <input type="text" id="案件番号Display" name="案件番号" readonly />
 
-      <!-- 公司名（只读） -->
+      <!-- 公司名（只读文本框） -->
       <label for="公司名">公司名：</label>
-      <input type="text" id="公司名" name="公司名" readonly>
+      <input type="text" id="公司名" name="公司名" readonly />
 
       <!-- 用户填写新邮箱 -->
-      <label for="newEmail">希望变更后的邮箱为（复数邮箱请用半角逗号分隔）：</label>
-      <input type="text" id="newEmail" name="newEmail" placeholder="例如：a@xx.com,b@xx.com" required>
+      <label for="newEmail">希望变更后的邮箱为（一个以上邮箱请用半角逗号分隔）：</label>
+      <input type="text" id="newEmail" name="newEmail" placeholder="例如：a@xx.com,b@xx.com" required />
 
       <!-- 提交按钮 -->
       <button type="submit">提交更新</button>
     </form>
   </div>
 
-  <!-- JavaScript：解析URL参数并更新kintone记录 -->
+  <!-- JavaScript：解析URL参数，并通过 Google Apps Script 更新 kintone 记录 -->
   <script>
-    // 解析URL查询参数
+    // 解析URL查询参数的函数
     function getQueryParams() {
       const params = {};
-      const queryString = window.location.search.substring(1);
+      const queryString = window.location.search.substring(1); // 去掉开头的'?'
       const queries = queryString.split('&');
       queries.forEach(function(query) {
         const [key, value] = query.split('=');
         if (key) {
+          // 将参数名和参数值解码并存储到对象中
           params[decodeURIComponent(key)] = decodeURIComponent(value || '');
         }
       });
       return params;
     }
 
-    // 页面加载后执行，填充表单
+    // 当页面加载完成后，执行初始化：将URL中的参数值填充到表单字段中
     window.addEventListener('DOMContentLoaded', () => {
       const params = getQueryParams();
-      console.log(params);  // 打印查询参数，检查是否正确
+      console.log(params);  // 在控制台打印所有查询参数，供调试检查
 
       if (params.案件番号) {
-        document.getElementById('案件番号').value = params.案件番号;  // 填充案件番号
-        document.getElementById('案件番号Display').value = params.案件番号;  // 显示案件番号
+        // 如果 URL 中包含“案件番号”，则设置隐藏字段和显示字段的值
+        document.getElementById('案件番号').value = params.案件番号;       // 填充隐藏的案件番号字段
+        document.getElementById('案件番号Display').value = params.案件番号; // 在页面上显示案件番号
       }
       if (params.公司名) {
-        document.getElementById('公司名').value = params.公司名;  // 填充公司名
+        // 如果 URL 中包含“公司名”，则填充公司名字段
+        document.getElementById('公司名').value = params.公司名;
       }
     });
 
-    // 提交表单时，更新kintone记录
+    // 当提交表单时，通过 GAS 更新 kintone 记录
     document.getElementById('updateForm').addEventListener('submit', function(event) {
-      event.preventDefault();
+      event.preventDefault();  // 阻止表单的默认提交行为
 
+      // 获取用户输入的值
       const 案件番号 = document.getElementById('案件番号').value;
       const newEmail = document.getElementById('newEmail').value;
 
-      // 将数据传递给 Google Apps Script
+      // 将数据打包成 FormData 格式（表单数据）
+      // 注意：不要手动设置 Content-Type 请求头，fetch 会自动为 FormData 设置合适的内容类型
+      // 这样请求属于简单请求，可避免触发浏览器的 CORS 预检（OPTIONS）请求
       const data = new FormData();
       data.append('案件番号', 案件番号);
       data.append('newEmail', newEmail);
 
-      // 向 GAS 发送请求
-      fetch('https://script.google.com/macros/s/AKfycbwXi8MO16fjHmdymO8_1Yyls3shw21BoveGRgVffT8Ipe0ZsgMWbhjnxhRoUMyGzS4I_w/exec', {
+      // 使用 fetch 向 Google Apps Script Web 应用发送 POST 请求
+      fetch('https://script.google.com/macros/s/AKfycbwyfxiGHCvhXnAObRppL98DOdNNjBYduG-_TkpexJ-CYMfTPRn7GK7e4Py362S4Z6CGNw/exec', {
         method: 'POST',
-        body: data,
+        body: data  // 将表单数据作为请求主体发送
       })
-      .then(response => response.json())
-      .then(data => {
-        console.log('成功更新：', data);
-        alert("记录已成功更新！");
+      .then(response => response.json())  // 将返回结果解析为 JSON
+      .then(result => {
+        // 处理成功响应结果
+        console.log('成功更新：', result);    // 在控制台输出返回的结果（调试用）
+        alert("记录已成功更新！");           // 提示用户更新成功
       })
       .catch(error => {
-        console.error('更新失败：', error);
-        alert("更新记录时出错：" + error.message);
+        // 处理错误情况（例如网络错误或服务器错误）
+        console.error('更新失败：', error);   // 在控制台输出错误信息
+        alert("更新记录时出错：" + error.message);  // 提示用户发生了错误
       });
     });
   </script>
