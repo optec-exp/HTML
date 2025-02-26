@@ -30,21 +30,6 @@
       padding: 40px;
     }
 
-    /* 响应式背景图：根据屏幕大小加载不同的背景图 */
-    @media (max-width: 480px) {
-      body {
-        background: url('https://i.imgur.com/lowres.jpg') no-repeat center center fixed; /* 使用较低分辨率图片 */
-        background-size: cover;
-      }
-    }
-
-    @media (min-width: 481px) and (max-width: 1024px) {
-      body {
-        background: url('https://i.imgur.com/mediumres.jpg') no-repeat center center fixed; /* 使用中等分辨率图片 */
-        background-size: cover;
-      }
-    }
-
     /* 容器：中心定位 */
     .container {
       width: 100%;
@@ -117,6 +102,13 @@
       background-color: #005bb5;
     }
 
+    /* 动态加载图标样式 */
+    #loadingIcon {
+      display: none;
+      font-size: 30px;
+      color: #0071e3;
+    }
+
     /* 移动端适配 */
     @media (max-width: 480px) {
       .container {
@@ -134,7 +126,7 @@
   <!-- 外部容器，表单居中 -->
   <div class="container" id="formContainer">
     <h1>
-      <i class="fas fa-exchange-alt icon"></i> <span id="formTitle">邮箱变更依赖</span>
+      <i class="fas fa-exchange-alt icon"></i> 邮箱变更依赖
     </h1>
     <form id="updateForm">
       <!-- 隐藏字段，存储kintone记录ID -->
@@ -155,6 +147,12 @@
       <!-- 提交按钮 -->
       <button type="submit">提交更新</button>
     </form>
+
+    <!-- 动态加载图标 -->
+    <div id="loadingIcon" class="fas fa-spinner fa-spin"></div>
+
+    <!-- 提交成功消息 -->
+    <div id="successMessage" style="display: none; text-align: center; color: green; font-size: 18px;">修改已成功提交！</div>
   </div>
 
   <!-- JavaScript：解析URL参数并更新kintone记录 -->
@@ -173,19 +171,7 @@
       return params;
     }
 
-    // 根据浏览器语言选择显示语言
-    function setLanguage() {
-      const userLang = navigator.language || navigator.userLanguage; 
-      const lang = userLang.startsWith("en") ? "en" : "zh"; // 简单的英文/中文判定
-
-      if (lang === "en") {
-        document.getElementById("formTitle").textContent = "Email Change Request";
-        document.querySelector("label[for='newEmail']").textContent = "New email(s) (separate multiple emails with commas):";
-        document.querySelector("button[type='submit']").textContent = "Submit Update";
-      }
-    }
-
-    // 页面加载后执行，填充表单并设置语言
+    // 页面加载后执行，填充表单
     window.addEventListener('DOMContentLoaded', () => {
       const params = getQueryParams();
       if (params.recordId) {
@@ -197,8 +183,6 @@
       if (params.公司名) {
         document.getElementById('公司名').value = params.公司名;
       }
-
-      setLanguage(); // 设置语言
     });
 
     // 提交表单时，更新kintone记录
@@ -207,6 +191,10 @@
 
       const recordId = document.getElementById('recordId').value;
       const newEmail = document.getElementById('newEmail').value;
+
+      // 显示加载图标
+      document.getElementById('loadingIcon').style.display = 'block';
+      document.getElementById('formContainer').style.display = 'none';
 
       // 将数据传递给 Google Apps Script
       const data = new FormData();
@@ -221,10 +209,12 @@
       .then(response => response.json())
       .then(data => {
         console.log('成功更新：', data);
-        document.getElementById('formContainer').innerHTML = "<h1>修改已提交，谢谢！</h1>"; // 隐藏表单并显示感谢信息
+        document.getElementById('loadingIcon').style.display = 'none'; // 隐藏加载图标
+        document.getElementById('successMessage').style.display = 'block'; // 显示成功消息
       })
       .catch(error => {
         console.error('更新失败：', error);
+        document.getElementById('loadingIcon').style.display = 'none'; // 隐藏加载图标
         alert("更新记录时出错：" + error.message);
       });
     });
