@@ -201,7 +201,7 @@
     data.append('newEmail', newEmail);
 
     // 使用 fetch 向 Google Apps Script 部署的 Web 应用发送跨域 POST 请求
-    fetch('https://script.google.com/macros/s/AKfycb...您的脚本ID.../exec', {
+    fetch('https://script.google.com/macros/s/AKfycbynKWRHxxahoTDvqdXCM_oePC2rSjmR6JdeNPVdOOUR3jmII4pt9ILDfJMciyx9-sI8lQ/exec', {
       method: 'POST',
       mode: 'cors',       // 明确指定跨域请求模式
       body: data          // 将表单数据作为请求主体发送
