@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>邮箱变更依赖 - 更新 kintone 记录</title>
+  <title>OPTEC - メールアドレス変更依赖</title>
 
   <!-- 引入 Font Awesome 图标库 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -127,6 +127,27 @@
         font-size: 24px;
       }
     }
+
+    /* 加载中的样式 */
+    .loading {
+      text-align: center;
+      margin-top: 20px;
+      color: #333;
+    }
+
+    .loading i {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    /* 成功消息样式 */
+    .success {
+      text-align: center;
+      margin-top: 20px;
+      color: #333;
+      font-size: 18px;
+      font-weight: 600;
+    }
   </style>
 </head>
 <body>
@@ -134,27 +155,38 @@
   <!-- 外部容器，表单居中 -->
   <div class="container">
     <h1>
-      <i class="fas fa-exchange-alt icon"></i> 邮箱变更依赖
+      <i class="fas fa-exchange-alt icon"></i> メールアドレス変更依赖
     </h1>
     <form id="updateForm">
       <!-- 隐藏字段，存储kintone记录ID -->
       <input type="hidden" id="recordId" name="recordId">
 
       <!-- 案件番号（只读） -->
-      <label for="案件番号">案件番号：</label>
+      <label for="案件番号">当社案件番号：</label>
       <input type="text" id="案件番号" name="案件番号" readonly>
 
       <!-- 公司名（只读） -->
-      <label for="公司名">公司名：</label>
+      <label for="公司名">会社名：</label>
       <input type="text" id="公司名" name="公司名" readonly>
 
       <!-- 用户填写新邮箱 -->
-      <label for="newEmail">希望变更后的邮箱为（复数邮箱请用逗号分隔）：</label>
+      <label for="newEmail">変更後メールアドレス（複数メールアドレスはカンマで区切ってください）：</label>
       <input type="text" id="newEmail" name="newEmail" placeholder="例如：a@xx.com,b@xx.com" required>
 
       <!-- 提交按钮 -->
-      <button type="submit">提交更新</button>
+      <button type="submit">依頼送信</button>
     </form>
+
+    <!-- 加载中的状态 -->
+    <div id="loading" class="loading" style="display: none;">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>送信中...</p>
+    </div>
+
+    <!-- 成功状态 -->
+    <div id="success" class="success" style="display: none;">
+      送信成功！
+    </div>
   </div>
 
   <!-- JavaScript：解析URL参数并更新kintone记录 -->
@@ -181,7 +213,6 @@
       }
       if (params.案件番号) {
         document.getElementById('案件番号').value = params.案件番号;
-
       }
       if (params.公司名) {
         document.getElementById('公司名').value = params.公司名;
@@ -200,6 +231,10 @@
       data.append('recordId', recordId);
       data.append('newEmail', newEmail);
 
+      // 显示加载中状态，隐藏表单
+      document.getElementById('updateForm').style.display = 'none';
+      document.getElementById('loading').style.display = 'block';
+
       // 向 GAS 发送请求
       fetch('https://script.google.com/macros/s/AKfycbwZa_9QKaMW6SfoR8eHcLkRbH9oGdwaBl5zCSsDFCXd7Q082Bh2RhT7Jqk5XmRV0SRJ/exec', {
         method: 'POST',
@@ -207,12 +242,18 @@
       })
       .then(response => response.json())
       .then(data => {
-        console.log('成功更新：', data);
-        alert("记录已成功更新！");
+        console.log('送信成功：', data);
+        // 隐藏加载中状态，显示成功消息
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('success').style.display = 'block';
+        alert("送信成功！");
       })
       .catch(error => {
-        console.error('更新失败：', error);
-        alert("更新记录时出错：" + error.message);
+        console.error('送信失敗：', error);
+        // 显示表单，隐藏加载中状态
+        document.getElementById('updateForm').style.display = 'block';
+        document.getElementById('loading').style.display = 'none';
+        alert("送信失敗：" + error.message);
       });
     });
   </script>
