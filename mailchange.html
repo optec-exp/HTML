@@ -158,8 +158,23 @@
   document.getElementById('updateForm').addEventListener('submit', function(event) {
     event.preventDefault();  // 阻止表单的默认提交行为
 
+    // 当页面加载完成后，执行初始化：将URL中的参数值填充到表单字段中
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = getQueryParams();
+      console.log(params);  // 在控制台打印所有查询参数，供调试检查
+
+      if (params.案件番号) {
+        // 如果 URL 中包含“案件番号”，则设置隐藏字段和显示字段的值
+        document.getElementById('案件番号').value = params.案件番号;       // 填充隐藏的案件番号字段
+        document.getElementById('案件番号Display').value = params.案件番号; // 在页面上显示案件番号
+      }
+      if (params.公司名) {
+        // 如果 URL 中包含“公司名”，则填充公司名字段
+        document.getElementById('公司名').value = params.公司名;
+      }
+    });
+
     // 获取用户输入的值
-    const 案件番号 = document.getElementById('案件番号').value;
     const newEmail = document.getElementById('newEmail').value;
 
     // 将数据打包成 FormData 格式（表单数据）
