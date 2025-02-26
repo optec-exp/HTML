@@ -156,9 +156,6 @@
   <!-- JavaScript：解析URL参数，并通过 Google Apps Script 更新 kintone 记录 -->
   
   <script>
-  document.getElementById('updateForm').addEventListener('submit', function(event) {
-    event.preventDefault();  // 阻止表单的默认提交行为
-    
     // 解析URL查询参数的函数
     function getQueryParams() {
       const params = {};
@@ -189,7 +186,10 @@
         document.getElementById('公司名').value = params.公司名;
       }
     });
-
+    
+  document.getElementById('updateForm').addEventListener('submit', function(event) {
+    event.preventDefault();  // 阻止表单的默认提交行为
+    
     // 获取用户输入的值
     const 案件番号 = document.getElementById('案件番号').value;
     const newEmail = document.getElementById('newEmail').value;
