@@ -33,14 +33,14 @@
     /* 响应式背景图：根据屏幕大小加载不同的背景图 */
     @media (max-width: 480px) {
       body {
-        background: url('https://i.imgur.com/lowres.jpg') no-repeat center center fixed;
+        background: url('https://i.imgur.com/lowres.jpg') no-repeat center center fixed; /* 使用较低分辨率图片 */
         background-size: cover;
       }
     }
 
     @media (min-width: 481px) and (max-width: 1024px) {
       body {
-        background: url('https://i.imgur.com/mediumres.jpg') no-repeat center center fixed;
+        background: url('https://i.imgur.com/mediumres.jpg') no-repeat center center fixed; /* 使用中等分辨率图片 */
         background-size: cover;
       }
     }
@@ -49,49 +49,25 @@
     .container {
       width: 100%;
       max-width: 480px;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.8); /* 半透明白色背景 */
       padding: 30px;
       border-radius: 20px;
       box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-      position: relative;
-    }
-
-    /* 新增状态容器样式 */
-    .status-container {
-      display: none;
-      text-align: center;
-      padding: 30px;
-    }
-
-    .loading-icon {
-      font-size: 40px;
-      margin-bottom: 20px;
-      animation: spin 1s linear infinite;
-    }
-
-    .success-icon {
-      font-size: 40px;
-      margin-bottom: 20px;
-      color: #28a745;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      backdrop-filter: blur(10px); /* 背景模糊效果 */
     }
 
     h1 {
       text-align: center;
       font-size: 28px;
-      margin-bottom: 80px;
+      margin-bottom: 80px; /* 增加标题与表单的间距 */
       font-weight: 500;
       color: #333;
-      letter-spacing: 3px;
+      letter-spacing: 3px; /* 增加字母间距 */
       display: flex;
       justify-content: center;
       align-items: center;
     }
+
     /* 图标样式 */
     .icon {
       margin-right: 10px;
@@ -141,6 +117,30 @@
       background-color: #005bb5;
     }
 
+    /* 新增状态容器样式 */
+    .status-container {
+      display: none;
+      text-align: center;
+      padding: 30px;
+    }
+
+    .loading-icon {
+      font-size: 40px;
+      margin-bottom: 20px;
+      animation: spin 1s linear infinite;
+    }
+
+    .success-icon {
+      font-size: 40px;
+      margin-bottom: 20px;
+      color: #28a745;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
     /* 移动端适配 */
     @media (max-width: 480px) {
       .container {
@@ -160,10 +160,24 @@
     <h1>
       <i class="fas fa-exchange-alt icon"></i> 邮箱变更依赖
     </h1>
-    
-    <!-- 表单部分 -->
     <form id="updateForm">
-      <!-- 原有表单内容保持不变... -->
+      <!-- 隐藏字段，存储kintone记录ID -->
+      <input type="hidden" id="recordId" name="recordId">
+
+      <!-- 案件番号（只读） -->
+      <label for="案件番号">案件番号：</label>
+      <input type="text" id="案件番号" name="案件番号" readonly>
+
+      <!-- 公司名（只读） -->
+      <label for="公司名">公司名：</label>
+      <input type="text" id="公司名" name="公司名" readonly>
+
+      <!-- 用户填写新邮箱 -->
+      <label for="newEmail">希望变更后的邮箱为（复数邮箱请用逗号分隔）：</label>
+      <input type="text" id="newEmail" name="newEmail" placeholder="例如：a@xx.com,b@xx.com" required>
+
+      <!-- 提交按钮 -->
+      <button type="submit">提交更新</button>
     </form>
 
     <!-- 新增状态显示容器 -->
@@ -178,17 +192,40 @@
     </div>
   </div>
 
-  <!-- 修改后的JavaScript -->
+  <!-- JavaScript：解析URL参数并更新kintone记录 -->
   <script>
-    // 解析URL参数和填充表单的代码保持不变...
+    // 解析URL查询参数
+    function getQueryParams() {
+      const params = {};
+      const queryString = window.location.search.substring(1);
+      const queries = queryString.split('&');
+      queries.forEach(function(query) {
+        const [key, value] = query.split('=');
+        if (key) {
+          params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+        }
+      });
+      return params;
+    }
+
+    // 页面加载后执行，填充表单
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = getQueryParams();
+      if (params.recordId) {
+        document.getElementById('recordId').value = params.recordId;
+      }
+      if (params.案件番号) {
+        document.getElementById('案件番号').value = params.案件番号;
+
+      }
+      if (params.公司名) {
+        document.getElementById('公司名').value = params.公司名;
+      }
+    });
 
     // 提交表单时，更新kintone记录
     document.getElementById('updateForm').addEventListener('submit', function(event) {
       event.preventDefault();
-
-      // 隐藏表单，显示加载状态
-      document.getElementById('updateForm').style.display = 'none';
-      document.getElementById('loadingStatus').style.display = 'block';
 
       const recordId = document.getElementById('recordId').value;
       const newEmail = document.getElementById('newEmail').value;
@@ -205,14 +242,10 @@
       })
       .then(response => response.json())
       .then(data => {
-        // 隐藏加载状态，显示成功状态
-        document.getElementById('loadingStatus').style.display = 'none';
-        document.getElementById('successStatus').style.display = 'block';
+        console.log('成功更新：', data);
+        alert("记录已成功更新！");
       })
       .catch(error => {
-        // 错误时恢复表单显示
-        document.getElementById('updateForm').style.display = 'block';
-        document.getElementById('loadingStatus').style.display = 'none';
         console.error('更新失败：', error);
         alert("更新记录时出错：" + error.message);
       });
