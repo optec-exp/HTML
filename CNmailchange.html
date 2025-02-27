@@ -177,6 +177,17 @@
       <label for="公司名">公司名：</label>
       <input type="text" id="公司名" name="公司名" readonly>
 
+      <!-- New field for "目前的接收邮箱" -->
+      <label for="currentEmail">目前的接收邮箱：</label>
+      <input type="text" id="currentEmail" name="currentEmail" readonly>
+
+      <!-- New field for "希望进行的操作" -->
+      <label for="action">希望进行的操作：</label>
+      <select id="action" name="action">
+        <option value="add">增加邮箱</option>
+        <option value="modify">修改邮箱</option>
+      </select>
+      
       <!-- 用户填写新邮箱 -->
       <label for="newEmail">希望变更后的邮箱为：</label>
       <input type="text" id="newEmail" name="newEmail" placeholder="例如：a@xx.com,b@xx.com" required>
@@ -226,6 +237,10 @@
       if (params.公司名) {
         document.getElementById('公司名').value = params.公司名;
       }
+      if (params.currentEmail) {
+        document.getElementById('currentEmail').value = params.currentEmail;  // Populate the "目前的接收邮箱" field
+      }
+      
     });
 
     // 提交表单时，更新kintone记录
@@ -233,8 +248,15 @@
       event.preventDefault();
 
       const recordId = document.getElementById('recordId').value;
+      const currentEmail = document.getElementById('currentEmail').value;
       const newEmail = document.getElementById('newEmail').value;
-
+      const action = document.getElementById('action').value;  
+      
+      let emailToSubmit = newEmail;
+      if (action === 'add') {
+        emailToSubmit = newEmail + ',' + currentEmail;
+      }
+      
       // 将数据传递给 Google Apps Script
       const data = new FormData();
       data.append('recordId', recordId);
