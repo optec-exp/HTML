@@ -2,13 +2,13 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>OPTEC - メールアドレス変更依赖</title>
 
-  <!-- 引入 Font Awesome 图标库 -->
+  <!-- 引入 Font Awesome 图标库，用于图标显示 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
-  <!-- 内嵌CSS，用于实现 Apple 风格的设计 -->
+  <!-- 内嵌CSS，用于实现 Apple 风格+自定义单选按钮样式 -->
   <style>
     /* 重置默认样式 */
     * {
@@ -18,7 +18,8 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+                   "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
       background: url('https://i.imgur.com/jP3efp8.jpg') no-repeat center center fixed;
       background-size: cover;
       height: 100vh;
@@ -30,17 +31,17 @@
       padding: 40px;
     }
 
-    /* 响应式背景图：根据屏幕大小加载不同的背景图 */
+    /* 响应式背景图示例 */
     @media (max-width: 480px) {
       body {
-        background: url('https://i.imgur.com/lowres.jpg') no-repeat center center fixed; /* 使用较低分辨率图片 */
+        background: url('https://i.imgur.com/lowres.jpg') no-repeat center center fixed;
         background-size: cover;
       }
     }
 
     @media (min-width: 481px) and (max-width: 1024px) {
       body {
-        background: url('https://i.imgur.com/mediumres.jpg') no-repeat center center fixed; /* 使用中等分辨率图片 */
+        background: url('https://i.imgur.com/mediumres.jpg') no-repeat center center fixed;
         background-size: cover;
       }
     }
@@ -58,8 +59,8 @@
 
     h1 {
       text-align: center;
-      font-size: 28px;
-      margin-bottom: 80px; /* 增加标题与表单的间距 */
+      font-size: 25px;
+      margin-bottom: 50px; /* 增加标题与表单的间距 */
       font-weight: 500;
       color: #333;
       letter-spacing: 3px; /* 增加字母间距 */
@@ -71,7 +72,7 @@
     /* 图标样式 */
     .icon {
       margin-right: 10px;
-      font-size: 32px; /* 图标大小 */
+      font-size: 30px; /* 图标大小 */
       color: #0071e3; /* 设置图标颜色 */
     }
 
@@ -100,13 +101,77 @@
       background: #fff;
     }
 
+    /* 单选按钮的容器 */
+    .radio-group {
+      display: flex;
+      gap: 20px; /* 控制单选按钮之间的间距 */
+      margin-top: 5px;
+    }
+
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      font-weight: normal;
+      cursor: pointer;
+      position: relative;
+      padding-left: 25px; /* 给自定义单选按钮预留位置 */
+    }
+
+    /* 隐藏原生单选按钮 */
+    .radio-group input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    /* 自定义单选按钮外圈 */
+    .radio-group .checkmark {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 18px;
+      width: 18px;
+      background-color: #fff;
+      border: 2px solid #ccc;
+      border-radius: 50%;
+    }
+
+    /* 鼠标悬停时外圈变色 */
+    .radio-group label:hover input ~ .checkmark {
+      border-color: #0071e3;
+    }
+
+    /* 被选中时填充 */
+    .radio-group input:checked ~ .checkmark {
+      border-color: #0071e3;
+    }
+
+    /* 填充的小圆点 */
+    .radio-group .checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #0071e3;
+      transform: translate(-50%, -50%);
+    }
+
+    .radio-group input:checked ~ .checkmark:after {
+      display: block;
+    }
+
     button[type="submit"] {
       width: 100%;
       padding: 14px;
       margin-top: 30px;
       background-color: #0071e3;
       color: white;
-      font-size: 18px;
+      font-size: 16px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
@@ -156,12 +221,10 @@
       color: #666;
       margin-top: 5px;
     }
-
   </style>
 </head>
 <body>
 
-  <!-- 外部容器，表单居中 -->
   <div class="container">
     <h1>
       <i class="fas fa-exchange-alt icon"></i> メールアドレス変更依赖
@@ -178,11 +241,30 @@
       <label for="公司名">会社名：</label>
       <input type="text" id="公司名" name="公司名" readonly>
 
+      <!-- 目前的接收邮箱（只读） -->
+      <label for="currentEmail">現在の受信メールアドレス：</label>
+      <input type="text" id="currentEmail" name="currentEmail" readonly>
+
+      <!-- 希望进行的操作（单选按钮） -->
+      <label for="action">実行したい操作：</label>
+      <div class="radio-group">
+        <label>
+          <input type="radio" name="action" value="add" checked>
+          <span class="checkmark"></span>
+          メールアドレス追加
+        </label>
+        <label>
+          <input type="radio" name="action" value="modify">
+          <span class="checkmark"></span>
+          メールアドレス修正
+        </label>
+      </div>
+
       <!-- 用户填写新邮箱 -->
-      <label for="newEmail">変更後メールアドレス：</label>
+      <label for="newEmail">メールアドレス：</label>
       <input type="text" id="newEmail" name="newEmail" placeholder="例：a@xx.com,b@xx.com" required>
       <span class="input-tip">（複数メールアドレスはカンマで区切ってください）</span>
-      
+
       <!-- 提交按钮 -->
       <button type="submit">依頼送信</button>
     </form>
@@ -218,6 +300,7 @@
     // 页面加载后执行，填充表单
     window.addEventListener('DOMContentLoaded', () => {
       const params = getQueryParams();
+
       if (params.recordId) {
         document.getElementById('recordId').value = params.recordId;
       }
@@ -227,32 +310,51 @@
       if (params.公司名) {
         document.getElementById('公司名').value = params.公司名;
       }
+      // 从 URL 参数中获取 currentEmail 用于只读展示
+      if (params.currentEmail) {
+        document.getElementById('currentEmail').value = params.currentEmail;
+      }
     });
 
-    // 提交表单时，更新kintone记录
+    // 提交表单时，更新kintone记录（或传递给 GAS）
     document.getElementById('updateForm').addEventListener('submit', function(event) {
       event.preventDefault();
 
+      // 获取表单数据
       const recordId = document.getElementById('recordId').value;
-      const newEmail = document.getElementById('newEmail').value;
+      const currentEmail = document.getElementById('currentEmail').value;
+      const newEmailValue = document.getElementById('newEmail').value;
 
-      // 将数据传递给 Google Apps Script
+      // 读取单选按钮的值
+      const action = document.querySelector('input[name="action"]:checked').value;
+
+      // 根据选择的操作决定如何组合 newEmail
+      let emailToSubmit;
+      if (action === 'add') {
+        // 选择 "增加邮箱" 时，用逗号拼接
+        emailToSubmit = newEmailValue + ',' + currentEmail;
+      } else {
+        // 选择 "修改邮箱" 时，仅使用 newEmailValue
+        emailToSubmit = newEmailValue;
+      }
+
+      // 使用 FormData 准备要提交的数据
       const data = new FormData();
       data.append('recordId', recordId);
-      data.append('newEmail', newEmail);
+      data.append('newEmail', emailToSubmit);
 
       // 显示加载中状态，隐藏表单
       document.getElementById('updateForm').style.display = 'none';
       document.getElementById('loading').style.display = 'block';
 
-      // 向 GAS 发送请求
+      // 向 Google Apps Script 或其他后端服务发送请求
       fetch('https://script.google.com/macros/s/AKfycbwZa_9QKaMW6SfoR8eHcLkRbH9oGdwaBl5zCSsDFCXd7Q082Bh2RhT7Jqk5XmRV0SRJ/exec', {
         method: 'POST',
         body: data,
       })
       .then(response => response.json())
-      .then(data => {
-        console.log('送信成功：', data);
+      .then(responseData => {
+        console.log('送信成功：', responseData);
         // 隐藏加载中状态，显示成功消息
         document.getElementById('loading').style.display = 'none';
         document.getElementById('success').style.display = 'block';
@@ -260,7 +362,7 @@
       })
       .catch(error => {
         console.error('送信失敗：', error);
-        // 显示表单，隐藏加载中状态
+        // 重新显示表单，隐藏加载中状态
         document.getElementById('updateForm').style.display = 'block';
         document.getElementById('loading').style.display = 'none';
         alert("送信失敗：" + error.message);
