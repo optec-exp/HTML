@@ -249,20 +249,23 @@
       <label for="action">Perform Operation：</label>
       <div class="radio-group">
         <label>
-          <input type="radio" name="action" value="add" checked>
-          <span class="checkmark"></span>
-          Add
-        </label>
-        <label>
-          <input type="radio" name="action" value="modify">
+          <input type="radio" name="action" value="modify" checked>
           <span class="checkmark"></span>
           Change
+        </label>
+        <label>
+          <input type="radio" name="action" value="add">
+          <span class="checkmark"></span>
+          Add
         </label>
       </div>
 
       <!-- 用户填写新邮箱 -->
       <label for="newEmail">Email Address：</label>
-      <input type="text" id="newEmail" name="newEmail" placeholder="ex.：a@xx.com,b@xx.com" required>
+      <input type="text" id="newEmail" name="newEmail" 
+             pattern="^[!-~]+$" 
+             title="Only ASCII letters and symbols are allowed" 
+             placeholder="ex.：a@xx.com,b@xx.com" required>
       <span class="input-tip">（Please separate multiple email addresses with commas）</span>
 
       <!-- 提交按钮 -->
@@ -314,6 +317,21 @@
       if (params.currentEmail) {
         document.getElementById('currentEmail').value = params.currentEmail;
       }
+
+      // 根据选择的操作更新邮箱栏的预设值
+      const radioButtons = document.querySelectorAll('input[name="action"]');
+      radioButtons.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+          if (this.value === 'add') {
+            // 选择“增加邮箱”时，将【目前的接收邮箱】栏的值加逗号填入【邮箱】栏
+            const currentEmailVal = document.getElementById('currentEmail').value;
+            document.getElementById('newEmail').value = currentEmailVal + ",";
+          } else {
+            // 选择“修改邮箱”时，清空【邮箱】栏，让用户重新输入
+            document.getElementById('newEmail').value = "";
+          }
+        });
+      });
     });
 
     // 提交表单时，更新kintone记录（或传递给 GAS）
@@ -322,21 +340,8 @@
 
       // 获取表单数据
       const recordId = document.getElementById('recordId').value;
-      const currentEmail = document.getElementById('currentEmail').value;
-      const newEmailValue = document.getElementById('newEmail').value;
-
-      // 读取单选按钮的值
-      const action = document.querySelector('input[name="action"]:checked').value;
-
-      // 根据选择的操作决定如何组合 newEmail
-      let emailToSubmit;
-      if (action === 'add') {
-        // 选择 "增加邮箱" 时，用逗号拼接
-        emailToSubmit = newEmailValue + ',' + currentEmail;
-      } else {
-        // 选择 "修改邮箱" 时，仅使用 newEmailValue
-        emailToSubmit = newEmailValue;
-      }
+      // 直接取【邮箱】栏的值作为 newEmail
+      const emailToSubmit = document.getElementById('newEmail').value;
 
       // 使用 FormData 准备要提交的数据
       const data = new FormData();
