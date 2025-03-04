@@ -314,6 +314,21 @@
       if (params.currentEmail) {
         document.getElementById('currentEmail').value = params.currentEmail;
       }
+
+      // 根据选择的操作更新邮箱栏的预设值
+      const radioButtons = document.querySelectorAll('input[name="action"]');
+      radioButtons.forEach(function(radio) {
+        radio.addEventListener('change', function() {
+          if (this.value === 'add') {
+            // 选择“增加邮箱”时，将【目前的接收邮箱】栏的值加逗号填入【邮箱】栏
+            const currentEmailVal = document.getElementById('currentEmail').value;
+            document.getElementById('newEmail').value = currentEmailVal + ",";
+          } else {
+            // 选择“修改邮箱”时，可清空【邮箱】栏，让用户重新输入
+            document.getElementById('newEmail').value = "";
+          }
+        });
+      });
     });
 
     // 提交表单时，更新kintone记录（或传递给 GAS）
@@ -322,21 +337,8 @@
 
       // 获取表单数据
       const recordId = document.getElementById('recordId').value;
-      const currentEmail = document.getElementById('currentEmail').value;
-      const newEmailValue = document.getElementById('newEmail').value;
-
-      // 读取单选按钮的值
-      const action = document.querySelector('input[name="action"]:checked').value;
-
-      // 根据选择的操作决定如何组合 newEmail
-      let emailToSubmit;
-      if (action === 'add') {
-        // 选择 "增加邮箱" 时，用逗号拼接
-        emailToSubmit = newEmailValue + ',' + currentEmail;
-      } else {
-        // 选择 "修改邮箱" 时，仅使用 newEmailValue
-        emailToSubmit = newEmailValue;
-      }
+      // 直接取【邮箱】栏的值作为 newEmail
+      const emailToSubmit = document.getElementById('newEmail').value;
 
       // 使用 FormData 准备要提交的数据
       const data = new FormData();
