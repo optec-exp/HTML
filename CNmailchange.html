@@ -249,20 +249,23 @@
       <label for="action">希望进行的操作：</label>
       <div class="radio-group">
         <label>
-          <input type="radio" name="action" value="add" checked>
-          <span class="checkmark"></span>
-          增加邮箱
-        </label>
-        <label>
-          <input type="radio" name="action" value="modify">
+          <input type="radio" name="action" value="modify" checked>
           <span class="checkmark"></span>
           修改邮箱
+        </label>
+        <label>
+          <input type="radio" name="action" value="add">
+          <span class="checkmark"></span>
+          增加邮箱
         </label>
       </div>
 
       <!-- 用户填写新邮箱 -->
       <label for="newEmail">邮箱：</label>
-      <input type="text" id="newEmail" name="newEmail" placeholder="例如：a@xx.com,b@xx.com" required>
+      <input type="text" id="newEmail" name="newEmail" 
+             pattern="^[!-~]+$" 
+             title="仅允许半角英数字及半角符号" 
+             placeholder="例如：a@xx.com,b@xx.com" required>
       <span class="input-tip">（一个以上邮箱请用半角逗号分隔）</span>
 
       <!-- 提交按钮 -->
@@ -324,7 +327,7 @@
             const currentEmailVal = document.getElementById('currentEmail').value;
             document.getElementById('newEmail').value = currentEmailVal + ",";
           } else {
-            // 选择“修改邮箱”时，可清空【邮箱】栏，让用户重新输入
+            // 选择“修改邮箱”时，清空【邮箱】栏，让用户重新输入
             document.getElementById('newEmail').value = "";
           }
         });
