@@ -237,10 +237,6 @@
       <label for="案件番号">当社案件番号：</label>
       <input type="text" id="案件番号" name="案件番号" readonly>
 
-      <!-- 公司名（只读） -->
-      <label for="公司名">会社名：</label>
-      <input type="text" id="公司名" name="公司名" readonly>
-
       <!-- 目前的接收邮箱（只读） -->
       <label for="currentEmail">現在の受信メールアドレス：</label>
       <input type="text" id="currentEmail" name="currentEmail" readonly>
@@ -309,9 +305,6 @@
       }
       if (params.案件番号) {
         document.getElementById('案件番号').value = params.案件番号;
-      }
-      if (params.公司名) {
-        document.getElementById('公司名').value = params.公司名;
       }
       // 从 URL 参数中获取 currentEmail 用于只读展示
       if (params.currentEmail) {
