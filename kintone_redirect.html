@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Kintone 案件番号扫码跳转</title>
+</head>
+<body>
+  <h3>请输入或扫码案件番号，然后按回车</h3>
+  <input type="text" id="caseNoInput" placeholder="请输入案件番号" autofocus style="width:300px; font-size:16px;">
+
+  <script>
+    const input = document.getElementById("caseNoInput");
+    // 自动聚焦输入框
+    window.onload = function() {
+      input.focus();
+      input.select();
+    };
+    // 每秒检查并保持焦点
+    setInterval(() => {
+      if (document.activeElement !== input) {
+        input.focus();
+        input.select();
+      }
+    }, 1000);
+    // 监听回车键，构造并跳转到 Kintone 查询页面
+    input.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        const caseNo = e.target.value.trim();
+        if (!caseNo) return;
+        const domain = "https://yourdomain.cybozu.com"; // TODO: 替换成你的子域名
+        const appId = "123"; // TODO: 替换成你的 App ID
+        const query = encodeURIComponent('案件番号 = "' + caseNo + '"');
+        const url = `${domain}/k/${appId}/?query=${query}`;
+        window.location.href = url;
+      }
+    });
+  </script>
+</body>
+</html>
