@@ -2,42 +2,80 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Kintone 案件番号扫码跳转</title>
+  <title>Kintone 案件扫码跳转</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap');
+    body {
+      background-color: #f0f2f5;
+      font-family: 'Roboto', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+    }
+    h1 {
+      margin-bottom: 24px;
+      font-size: 24px;
+      color: #333333;
+    }
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #cccccc;
+      border-radius: 8px;
+      font-size: 18px;
+      box-sizing: border-box;
+      margin-bottom: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      border-color: #0052cc;
+    }
+    .note {
+      font-size: 14px;
+      color: #666666;
+    }
+  </style>
 </head>
 <body>
-  <h3>请输入或扫码案件番号，然后按回车</h3>
-  <input
-    type="text"
-    id="caseNoInput"
-    placeholder="请输入案件番号"
-    autofocus
-    style="width:300px; font-size:16px;"
-  >
-
+  <div class="container">
+    <h1>🔍 Kintone 案件扫码</h1>
+    <input type="text" id="caseNoInput" placeholder="请扫码或输入案件番号" autofocus>
+    <p class="note">扫描后自动在新标签打开记录并打印</p>
+  </div>
   <script>
-    const input = document.getElementById("caseNoInput");
-    // 自动聚焦
+    const input = document.getElementById('caseNoInput');
     window.onload = () => {
       input.focus();
       input.select();
     };
-    // 保持焦点
     setInterval(() => {
       if (document.activeElement !== input) {
         input.focus();
         input.select();
       }
     }, 1000);
-    // 回车事件：带参数跳到 Kintone 列表页
-    input.addEventListener("keypress", e => {
-      if (e.key === "Enter") {
+    input.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
         const caseNo = e.target.value.trim();
         if (!caseNo) return;
-        const domain = "https://si8qxbanrfkx.cybozu.com";  // ← 替成你的子域名
-        const appId  = "863";                            // ← 替成你的 App ID
-        // 我们在 URL 里加上 caseNo 并标记 print
+        const domain = 'https://si8qxbanrfkx.cybozu.com'; // TODO: 替换为你的子域名
+        const appId = '863'; // TODO: 替换为你的 App ID
         const url = `${domain}/k/${appId}/?caseNo=${encodeURIComponent(caseNo)}&print=true`;
-        window.location.href = url;
+        window.open(url, '_blank');
+        e.target.value = '';
+        input.focus();
       }
     });
   </script>
