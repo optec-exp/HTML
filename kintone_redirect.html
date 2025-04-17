@@ -6,31 +6,37 @@
 </head>
 <body>
   <h3>请输入或扫码案件番号，然后按回车</h3>
-  <input type="text" id="caseNoInput" placeholder="请输入案件番号" autofocus style="width:300px; font-size:16px;">
+  <input
+    type="text"
+    id="caseNoInput"
+    placeholder="请输入案件番号"
+    autofocus
+    style="width:300px; font-size:16px;"
+  >
 
   <script>
     const input = document.getElementById("caseNoInput");
-    // 自动聚焦输入框
-    window.onload = function() {
+    // 自动聚焦
+    window.onload = () => {
       input.focus();
       input.select();
     };
-    // 每秒检查并保持焦点
+    // 保持焦点
     setInterval(() => {
       if (document.activeElement !== input) {
         input.focus();
         input.select();
       }
     }, 1000);
-    // 监听回车键，构造并跳转到 Kintone 查询页面
-    input.addEventListener("keypress", function(e) {
+    // 回车事件：带参数跳到 Kintone 列表页
+    input.addEventListener("keypress", e => {
       if (e.key === "Enter") {
         const caseNo = e.target.value.trim();
         if (!caseNo) return;
-        const domain = "https://si8qxbanrfkx.cybozu.com"; // TODO: 替换成你的子域名
-        const appId = "863"; // TODO: 替换成你的 App ID
-        const query = encodeURIComponent('案件番号 = "' + caseNo + '"');
-        const url = `${domain}/k/${appId}/?query=${query}`;
+        const domain = "https://si8qxbanrfkx.cybozu.com";  // ← 替成你的子域名
+        const appId  = "863";                            // ← 替成你的 App ID
+        // 我们在 URL 里加上 caseNo 并标记 print
+        const url = `${domain}/k/${appId}/?caseNo=${encodeURIComponent(caseNo)}&print=true`;
         window.location.href = url;
       }
     });
