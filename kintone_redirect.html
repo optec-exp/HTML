@@ -71,7 +71,7 @@
         const caseNo = e.target.value.trim();
         if (!caseNo) return;
         const domain = 'https://si8qxbanrfkx.cybozu.com'; // TODO: 替换为你的子域名
-        const appId = '863'; // TODO: 替换为你的 App ID
+        const appId = '934'; // TODO: 替换为你的 App ID
         const url = `${domain}/k/${appId}/?caseNo=${encodeURIComponent(caseNo)}&print=true`;
         window.open(url, '_blank');
         e.target.value = '';
