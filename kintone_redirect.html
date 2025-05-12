@@ -52,14 +52,11 @@
   <div class="container">
     <h1>🔍 Kintone 案件扫码</h1>
     <input type="text" id="caseNoInput" placeholder="请扫码或输入案件番号" autofocus>
-    <p class="note">扫描后自动在新标签打开记录并打印</p>
+    <p class="note">扫描后自动在新标签打开记录</p>
   </div>
   <script>
     const input = document.getElementById('caseNoInput');
-    window.onload = () => {
-      input.focus();
-      input.select();
-    };
+    input.focus();
     setInterval(() => {
       if (document.activeElement !== input) {
         input.focus();
@@ -70,14 +67,15 @@
       if (e.key === 'Enter') {
         const caseNo = e.target.value.trim();
         if (!caseNo) return;
-        const domain = 'https://si8qxbanrfkx.cybozu.com'; // TODO: 替换为你的子域名
-        const appId = '934'; // TODO: 替换为你的 App ID
-        const url = `${domain}/k/${appId}/?caseNo=${encodeURIComponent(caseNo)}&print=true`;
+        const domain = 'https://si8qxbanrfkx.cybozu.com'; // 替换为你的子域名
+        const appId  = '934';                             // 替换为你的 App ID
+        // **这里不带 print=true**，先打开正常的 Detail 界面
+        const url = `${domain}/k/${appId}/show?caseNo=${encodeURIComponent(caseNo)}`;
         window.open(url, '_blank');
         e.target.value = '';
-        input.focus();
       }
     });
   </script>
 </body>
 </html>
+
