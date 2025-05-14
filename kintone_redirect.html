@@ -69,7 +69,7 @@
       const domain = 'https://si8qxbanrfkx.cybozu.com'; // ← 改成你的子域名
       const appId  = '934';                             // ← 改成你的 App ID
       // 打开“列表页”，让下面的 kintone index.show 逻辑接手
-      const url = `${domain}/k/${appId}/?caseNo=${encodeURIComponent(caseNo)}`;
+      const url = `${domain}/k/${appId}/?caseNo=${encodeURIComponent(caseNo)}&auto=1`;
       window.open(url, '_blank');
       e.target.value = '';
     });
