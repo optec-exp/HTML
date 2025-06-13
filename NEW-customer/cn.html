@@ -454,43 +454,38 @@
 
     // 5. 调用 GAS 更新 kintone
     (function(){
-      // 5.1 先把要传给 GAS 的所有字段重构为一个对象
-      const payload = {
-        appId:   972,  // kintone 应用 ID
-        companyName:       document.getElementById('companyName').value,
-        region:            region,
-        customerType:      document.querySelector('input[name="customerType"]:checked')?.value || '',
-        industry:          document.getElementById('customerIndustry')?.value || '',
-        establishmentYears:document.getElementById('establishmentYears')?.value || '',
-        capitalJpy:        document.getElementById('capitalJpy')?.value || '',
-        teikokuScore:      document.getElementById('teikokuScore')?.value || '',
-        isProfit:          document.querySelector('input[name="isProfit"]:checked')?.value === 'true',
-        paidInCapital:     document.getElementById('paidInCapital')?.value || '',
-        registrationYears: document.getElementById('registrationYears')?.value || '',
-        membership:        (['orgX2','orgAlna','orgNap','orgWcaInter','orgWcaOther']
-                              .map(id => document.getElementById(id))
-                              .filter(cb => cb.checked)
-                              .map(cb => cb.value)
-                              .join(',')),
-        blacklist:         document.querySelector('input[name="onBlacklist"]:checked')?.value || '',
-        partner:           document.querySelector('input[name="isPartner"]:checked')?.value || '',
-        contract:          document.querySelector('input[name="hasContract"]:checked')?.value || '',
-        creditLimit:       credit_limit,
-        paymentTerm:       payment_term
-      };
+      // 5.1 构造 FormData
+      const form = new FormData();
+      form.append('appId',            972);
+      form.append('companyName',      document.getElementById('companyName').value);
+      form.append('region',           region);
+      form.append('customerType',     document.querySelector('input[name="customerType"]:checked')?.value || '');
+      form.append('industry',         document.getElementById('customerIndustry')?.value || '');
+      form.append('establishmentYears',document.getElementById('establishmentYears')?.value || '');
+      form.append('capitalJpy',       document.getElementById('capitalJpy')?.value || '');
+      form.append('teikokuScore',     document.getElementById('teikokuScore')?.value || '');
+      form.append('isProfit',         document.querySelector('input[name="isProfit"]:checked')?.value === 'true');
+      form.append('paidInCapital',    document.getElementById('paidInCapital')?.value || '');
+      form.append('registrationYears',document.getElementById('registrationYears')?.value || '');
+      form.append('membership',       (['orgX2','orgAlna','orgNap','orgWcaInter','orgWcaOther']
+                                    .map(id => document.getElementById(id))
+                                    .filter(cb => cb.checked)
+                                    .map(cb => cb.value)
+                                    .join(',')));
+      form.append('blacklist',        document.querySelector('input[name="onBlacklist"]:checked')?.value || '');
+      form.append('partner',          document.querySelector('input[name="isPartner"]:checked')?.value || '');
+      form.append('contract',         document.querySelector('input[name="hasContract"]:checked')?.value || '');
+      form.append('creditLimit',      credit_limit);
+      form.append('paymentTerm',      payment_term);
 
-      // 5.2 发请求给 GAS
+      // 5.2 发 FormData，不带 headers
       fetch('https://script.google.com/macros/s/AKfycbxZfhjldo9pfME-NrF68UNfy9FucovLa0y91skRkG3DwHRYv6RR9V8V-6aOOz3FT-j_/exec', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+        body: form
       })
       .then(res => res.json())
       .then(result => {
         console.log('GAS 返回：', result);
-        // 如果需要，可在前端进一步提示用户
       })
       .catch(err => {
         console.error('调用 GAS 失败', err);
@@ -501,6 +496,7 @@
     results.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 </script>
+
 
 </body>
 </html>
