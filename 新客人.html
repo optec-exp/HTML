@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>客户账期与额度计算器</title>
+
+  <!-- 引入字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #1f3c88;
+      --accent-color: #f45d48;
+      --bg-light: #fafcff;
+      --card-bg: #ffffff;
+      --text-color: #2e2e2e;
+      --border-radius: 12px;
+      --transition: 0.3s ease;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+    }
+    .container {
+      width: 100%;
+      max-width: 800px;
+      background: var(--card-bg);
+      padding: 40px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      background-image: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
+    }
+    h1 {
+      margin: 0 0 30px;
+      font-size: 2rem;
+      text-align: center;
+      color: var(--primary-color);
+      letter-spacing: 1px;
+    }
+    .form-section { margin-bottom: 25px; }
+    .form-section label.section-title {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 12px;
+      font-size: 1rem;
+      color: var(--primary-color);
+    }
+    select, input[type="number"] {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #d1d7e0;
+      border-radius: var(--border-radius);
+      font-size: 1rem;
+      transition: border var(--transition);
+    }
+    select:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+    .radio-group, .checkbox-group {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 12px;
+      overflow-x: auto;
+    }
+    .radio-group input,
+    .checkbox-group input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .radio-group label,
+    .checkbox-group label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 20px;
+      font-size: 0.95rem;
+      border: 2px solid #d1d7e0;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      user-select: none;
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+    .radio-group input:checked + label,
+    .checkbox-group input:checked + label {
+      background: var(--accent-color);
+      border-color: var(--accent-color);
+      color: #fff;
+      font-weight: 600;
+    }
+    button {
+      width: 100%;
+      padding: 16px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      background: var(--primary-color);
+      border: none;
+      border-radius: var(--border-radius);
+      cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+    }
+    button:hover {
+      background: #162f6b;
+      transform: translateY(-2px);
+    }
+    button:active { transform: translateY(0); }
+    #results {
+      margin-top: 30px;
+      padding: 30px;
+      background: #e8f0fe;
+      border-left: 4px solid var(--accent-color);
+      border-radius: var(--border-radius);
+      display: none;
+    }
+    #results.visible { display: block; }
+    #results h2 {
+      margin: 0 0 15px;
+      color: var(--primary-color);
+      font-size: 1.3rem;
+    }
+    .result-item {
+      font-size: 1.1rem;
+      margin: 8px 0;
+    }
+    .result-item span {
+      font-weight: 700;
+      color: var(--accent-color);
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>客户账期与额度计算器</h1>
+    <form id="calculatorForm">
+      <div class="form-section">
+        <label class="section-title" for="primaryRegionSelect">1. 客户公司所在地域</label>
+        <select id="primaryRegionSelect" onchange="toggleSectionsByRegion()">
+          <option value="">-- 请选择 --</option>
+          <option value="日本">日本</option>
+          <option value="欧洲">欧洲</option>
+          <option value="中国">中国</option>
+          <option value="日企海外分公司(包括中国)">日企海外分公司(包括中国)</option>
+          <option value="其他地区">其他地区</option>
+        </select>
+      </div>
+
+      <div id="japanSection" class="form-section hidden">
+        <label class="section-title" for="establishmentYears">设立年数 (年)</label>
+        <input type="number" id="establishmentYears" placeholder="请输入公司成立年数">
+        <br><br>
+        <label class="section-title" for="capitalJpy">资本金 (万円)</label>
+        <input type="number" id="capitalJpy" placeholder="例如: 1000">
+        <br><br>
+        <label class="section-title" for="teikokuScore">帝国データバンク スコア (点)</label>
+        <input type="number" id="teikokuScore" placeholder="若无评分请留空">
+        <br><br>
+        <label class="section-title">前期决算</label>
+        <div class="radio-group">
+          <input type="radio" id="isProfitYes" name="isProfit" value="true" checked>
+          <label for="isProfitYes">黒字</label>
+          <input type="radio" id="isProfitNo" name="isProfit" value="false">
+          <label for="isProfitNo">赤字</label>
+        </div>
+      </div>
+
+      <div id="otherRegionsSection" class="hidden">
+        <div class="form-section">
+          <label class="section-title">2. 客户类型</label>
+          <div class="radio-group">
+            <input type="radio" id="typeDirect" name="customerType" value="direct" onchange="toggleSubSections()">
+            <label for="typeDirect">直客</label>
+            <input type="radio" id="typePeer" name="customerType" value="peer" onchange="toggleSubSections()">
+            <label for="typePeer">同行</label>
+          </div>
+        </div>
+
+        <div id="directCustomerFields" class="form-section hidden">
+          <label class="section-title" for="customerIndustry">公司性质 (行业)</label>
+          <select id="customerIndustry">
+            <option value="服装/小商品">服装/小商品</option>
+            <option value="电子部品">电子部品</option>
+            <option value="汽车及汽车配件">汽车及汽车配件</option>
+            <option value="贸易公司">贸易公司</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+
+        <div id="peerForwarderFields" class="form-section hidden">
+          <label class="section-title">是否属于会员组织？</label>
+          <div class="checkbox-group">
+            <input type="checkbox" id="orgNone" value="none" checked>
+            <label for="orgNone">否</label>
+            <label for="orgX2">X2</label>
+            <input type="checkbox" id="orgAlna" value="ALNA">
+            <label for="orgAlna">ALNA</label>
+            <input type="checkbox" id="orgNap" value="NAP">
+            <label for="orgNap">NAP</label>
+            <input type="checkbox" id="orgX2" value="X2">
+            <input type="checkbox" id="orgWcaInter" value="WCA_INTER">
+            <label for="orgWcaInter">WCA INTER GLOBAL/WCA Time Critical</label>
+            <input type="checkbox" id="orgWcaOther" value="WCA_OTHER">
+            <label for="orgWcaOther">WCA 其他组织</label>
+
+          </div>
+          <br>
+          <label class="section-title">若为会员，是否在黑名单内？</label>
+          <div class="radio-group">
+            <input type="radio" id="blacklistYes" name="onBlacklist" value="yes">
+            <label for="blacklistYes">是</label>
+            <input type="radio" id="blacklistNo" name="onBlacklist" value="no" checked>
+            <label for="blacklistNo">否</label>
+          </div>
+          <hr style="margin:24px 0;">
+          <label class="section-title">是否为OPTEC合作方？</label>
+          <div class="radio-group">
+            <input type="radio" id="partnerYes" name="isPartner" value="yes">
+            <label for="partnerYes">是</label>
+            <input type="radio" id="partnerNo" name="isPartner" value="no" checked>
+            <label for="partnerNo">否</label>
+          </div>
+          <br>
+          <label class="section-title">若为合作方，是否有合同？</label>
+          <div class="radio-group">
+            <input type="radio" id="contractYes" name="hasContract" value="yes">
+            <label for="contractYes">是</label>
+            <input type="radio" id="contractNo" name="hasContract" value="no" checked>
+            <label for="contractNo">否</label>
+          </div>
+          <hr style="margin:24px 0;">
+          <label class="section-title" for="paidInCapital">公司实缴资本 (CNY 万)</label>
+          <input type="number" id="paidInCapital" placeholder="例如: 5000">
+          <br><br>
+          <label class="section-title" for="registrationYears">公司注册年限</label>
+          <input type="number" id="registrationYears" placeholder="例如: 10">
+        </div>
+      </div>
+
+      <input type="hidden" id="salesPrice">
+      <input type="hidden" id="companyName">
+      <button type="button" onclick="calculate()">计算</button>
+    </form>
+
+    <div id="results">
+      <h2>计算结果</h2>
+      <div class="result-item" id="resultCreditLimit"></div>
+      <div class="result-item" id="resultPaymentTerm"></div>
+    </div>
+  </div>
+
+<script>
+  window.onload = function() {
+    // URL 参数预填
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('price')) {
+      document.getElementById('salesPrice').value = params.get('price');
+    }
+    if (params.get('companyName')) {
+      document.getElementById('companyName').value = params.get('companyName');
+    }
+    // “否” 与 各组织互斥
+    const noneCb = document.getElementById('orgNone');
+    const orgCbs = ['orgWcaInter','orgWcaOther','orgAlna','orgNap','orgX2']
+      .map(id => document.getElementById(id));
+    noneCb.addEventListener('change', () => {
+      if (noneCb.checked) orgCbs.forEach(cb => cb.checked = false);
+    });
+    orgCbs.forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) noneCb.checked = false;
+        else if (!orgCbs.some(x => x.checked)) noneCb.checked = true;
+      });
+    });
+  };
+
+  function toggleSectionsByRegion() {
+    const r = document.getElementById('primaryRegionSelect').value;
+    document.getElementById('japanSection').classList.add('hidden');
+    document.getElementById('otherRegionsSection').classList.add('hidden');
+    document.getElementById('results').classList.remove('visible');
+    if (r === '日本') {
+      document.getElementById('japanSection').classList.remove('hidden');
+    } else if (r) {
+      document.getElementById('otherRegionsSection').classList.remove('hidden');
+    }
+  }
+
+  function toggleSubSections() {
+    const t = document.querySelector('input[name="customerType"]:checked').value;
+    document.getElementById('directCustomerFields').classList.add('hidden');
+    document.getElementById('peerForwarderFields').classList.add('hidden');
+    if (t === 'direct') {
+      document.getElementById('directCustomerFields').classList.remove('hidden');
+    } else {
+      document.getElementById('peerForwarderFields').classList.remove('hidden');
+    }
+  }
+
+  function calculate() {
+    // 1. 校验
+    const region = document.getElementById('primaryRegionSelect').value;
+    if (!region) {
+      alert("请首先选择客户公司所在地域！");
+      return;
+    }
+
+    // 2. 计算逻辑
+    let payment_term = '';
+    let credit_limit = '';
+    if (region === '日本') {
+      const years        = parseFloat(document.getElementById('establishmentYears').value) || 0;
+      const capitalInput = parseFloat(document.getElementById('capitalJpy').value)       || 0;
+      const capital      = capitalInput * 10000;
+      const scoreStr     = document.getElementById('teikokuScore').value;
+      const score        = scoreStr ? parseFloat(scoreStr) : null;
+      const isProfit     = document.querySelector('input[name="isProfit"]:checked').value === 'true';
+
+      if (years >= 10) {
+        if (capital >= 10000000) {
+          if (score === null || score < 40) {
+            payment_term = "前払い"; credit_limit = "¥0";
+          } else if (score >= 51) {
+            payment_term = "末締め翌月末払い"; credit_limit = "¥10,000,000";
+          } else if (isProfit) {
+            payment_term = "末締め翌月末払い"; credit_limit = "¥3,500,000";
+          } else {
+            payment_term = "30日（立替金は前払い）"; credit_limit = "¥1,000,000";
+          }
+        } else {
+          if (score === null || score < 40) {
+            payment_term = "前払い"; credit_limit = "¥0";
+          } else if (score >= 51) {
+            payment_term = "末締め翌月末払い"; credit_limit = "¥5,000,000";
+          } else if (isProfit) {
+            payment_term = "30日"; credit_limit = "¥2,000,000";
+          } else {
+            payment_term = "15日（立替金は前払い）"; credit_limit = "¥500,000";
+          }
+        }
+      } else {
+        if (capital >= 10000000) {
+          if (score === null || score < 40) {
+            payment_term = "前払い"; credit_limit = "¥0";
+          } else if (score >= 51) {
+            payment_term = "末締め翌月末払い"; credit_limit = "¥5,000,000";
+          } else if (isProfit) {
+            payment_term = "末締め翌月末払い"; credit_limit = "¥1,000,000";
+          } else {
+            payment_term = "30日（立替金は前払い）"; credit_limit = "¥500,000";
+          }
+        } else {
+          if (score === null || score < 40) {
+            payment_term = "前払い"; credit_limit = "¥0";
+          } else if (score >= 51) {
+            payment_term = "末締め翌月末払い"; credit_limit = "¥1,000,000";
+          } else if (isProfit) {
+            payment_term = "30日"; credit_limit = "¥1,000,000";
+          } else {
+            payment_term = "7日（立替金は前払い）"; credit_limit = "¥500,000";
+          }
+        }
+      }
+    } else {
+      const customerType = document.querySelector('input[name="customerType"]:checked');
+      const salesPrice   = parseFloat(document.getElementById('salesPrice').value) || 0;
+      if (!customerType) {
+        alert("请为其他地区客户选择客户类型！");
+        return;
+      }
+      if (customerType.value === 'direct') {
+        let grade = 'C';
+        const regionLabel = region === '其他地区' ? '其他' : region;
+        const industry    = document.getElementById('customerIndustry').value;
+        if (industry === "汽车及汽车配件") grade = "A";
+        else if (industry === "电子部品") {
+          grade = regionLabel === "欧洲" ? "A"
+                : regionLabel === "日企海外分公司(包括中国)" ? "B" : "C";
+        } else if (industry === "服装/小商品") {
+          grade = regionLabel === "欧洲" ? "B" : "C";
+        } else if (industry === "贸易公司") {
+          grade = regionLabel === "日企海外分公司(包括中国)" ? "A" : "C";
+        }
+        if (grade === "A") {
+          credit_limit = "JPY 2,000,000";
+          payment_term = salesPrice <= 100000 ? "30天账期(报价单盖章)" : "预付款";
+        } else if (grade === "B") {
+          credit_limit = "JPY 1,350,000";
+          payment_term = salesPrice <= 70000  ? "15天账期(报价单盖章)" : "预付款";
+        } else {
+          credit_limit = "JPY 0";
+          payment_term = "预付款(报价单盖章)";
+        }
+      } else {
+        const orgWcaInter = document.getElementById('orgWcaInter').checked;
+        const orgX2       = document.getElementById('orgX2').checked;
+        const orgNap      = document.getElementById('orgNap').checked;
+        const orgWcaOther = document.getElementById('orgWcaOther').checked;
+        const orgAlna     = document.getElementById('orgAlna').checked;
+        const limits = [];
+        if (orgWcaInter) limits.push(13000000);
+        if (orgX2)       limits.push(13000000);
+        if (orgNap)      limits.push(6600000);
+        if (orgWcaOther) limits.push(6600000);
+        if (orgAlna)     limits.push(1000000);
+        if (limits.length > 0) {
+          payment_term = "30日";
+          credit_limit = `¥${Math.max(...limits).toLocaleString()}`;
+        } else {
+          const isPartner   = document.querySelector('input[name="isPartner"]:checked').value === 'yes';
+          const hasContract = document.querySelector('input[name="hasContract"]:checked').value === 'yes';
+          if (isPartner) {
+            if (hasContract) {
+              payment_term = "按签订的合同账期额度执行";
+              credit_limit = "按签订的合同账期额度执行";
+            } else {
+              payment_term = "次月月末";
+              credit_limit = "JPY 2,000,000";
+            }
+          } else {
+            const paidCap = parseFloat(document.getElementById('paidInCapital').value)   || 0;
+            const regY    = parseFloat(document.getElementById('registrationYears').value) || 0;
+            if (paidCap >= 5000 && regY >= 10) {
+              payment_term = "15天账期(报价单盖章)";
+              credit_limit = "JPY 1,000,000";
+            } else {
+              payment_term = "预付款(报价单盖章)";
+              credit_limit = "JPY 0";
+            }
+          }
+        }
+      }
+    }
+
+    // 3. 渲染结果
+    const results = document.getElementById('results');
+    document.getElementById('resultCreditLimit').innerHTML = `授信额度: <span>${credit_limit}</span>`;
+    document.getElementById('resultPaymentTerm').innerHTML   = `付款条件: <span>${payment_term}</span>`;
+    results.classList.add('visible');
+
+    // 4. 隐藏表单
+    document.getElementById('calculatorForm').classList.add('hidden');
+
+    // 5. kintone 新建记录
+    (function(){
+      const APP_ID    = 972;   // 你的应用 ID
+      const API_TOKEN = 'SOjzwQQ8J7RWt1aOPPFMDYVL6OgFEBqqCivrpptk'; // 你的 API Token
+
+      // 取出页面上所有字段
+      const companyName        = document.getElementById('companyName').value;
+      const regionField        = region;
+      const customerTypeField  = document.querySelector('input[name="customerType"]:checked')?.value || '';
+      const industryField      = document.getElementById('customerIndustry')?.value || '';
+      const establishmentYears = document.getElementById('establishmentYears')?.value || '';
+      const capitalJpy         = document.getElementById('capitalJpy')?.value || '';
+      const teikokuScoreField  = document.getElementById('teikokuScore')?.value || '';
+      const isProfitField      = document.querySelector('input[name="isProfit"]:checked')?.value === 'true' ? '黒字' : '赤字';
+      const paidInCapitalField = document.getElementById('paidInCapital')?.value || '';
+      const registrationYears  = document.getElementById('registrationYears')?.value || '';
+      const orgCbs             = ['orgX2','orgAlna','orgNap','orgWcaInter','orgWcaOther']
+        .map(id => document.getElementById(id))
+        .filter(cb => cb.checked)
+        .map(cb => cb.value);
+      const membershipField    = orgCbs.join(',');
+      const blacklistField     = document.querySelector('input[name="onBlacklist"]:checked')?.value || '';
+      const partnerField       = document.querySelector('input[name="isPartner"]:checked')?.value || '';
+      const contractField      = document.querySelector('input[name="hasContract"]:checked')?.value || '';
+
+      const body = {
+        app: APP_ID,
+        record: {
+          "公司名":       { value: companyName },
+          "所在地域":     { value: regionField },
+          "客户类型":     { value: customerTypeField },
+          "公司性质":     { value: industryField },
+          "设立年数":     { value: establishmentYears },
+          "资本金":       { value: capitalJpy },
+          "帝国スコア":   { value: teikokuScoreField },
+          "决算":         { value: isProfitField },
+          "公司实缴资本": { value: paidInCapitalField },
+          "公司注册年限": { value: registrationYears },
+          "会员组织":     { value: membershipField },
+          "会员黑名单":   { value: blacklistField },
+          "OPTEC合作方":  { value: partnerField },
+          "合同状态":     { value: contractField },
+          "授信额度":     { value: credit_limit },
+          "付款条件":     { value: payment_term }
+        }
+      };
+
+      const DOMAIN = 'si8qxbanrfkx.cybozu.com';  // ← 改成你的 kintone 子域名
+      fetch(`https://${DOMAIN}/k/v1/record.json`, {
+
+        method:  'POST',
+        headers: {
+          'X-Cybozu-API-Token': API_TOKEN,
+          'Content-Type':      'application/json'
+        },
+        body: JSON.stringify(body)
+      })
+      .then(r => r.json())
+      .then(j => console.log('新增成功', j))
+      .catch(e => console.error('新增失败', e));
+    })();
+
+    // 6. 自动滚动到结果区域
+    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+</script>
+
+</body>
+</html>
+
