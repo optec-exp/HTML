@@ -452,66 +452,49 @@
     // 4. 隐藏表单
     document.getElementById('calculatorForm').classList.add('hidden');
 
-    // 5. kintone 新建记录
+    // 5. 调用 GAS 更新 kintone
     (function(){
-      const APP_ID    = 972;   // 你的应用 ID
-      const API_TOKEN = 'SOjzwQQ8J7RWt1aOPPFMDYVL6OgFEBqqCivrpptk'; // 你的 API Token
-
-      // 取出页面上所有字段
-      const companyName        = document.getElementById('companyName').value;
-      const regionField        = region;
-      const customerTypeField  = document.querySelector('input[name="customerType"]:checked')?.value || '';
-      const industryField      = document.getElementById('customerIndustry')?.value || '';
-      const establishmentYears = document.getElementById('establishmentYears')?.value || '';
-      const capitalJpy         = document.getElementById('capitalJpy')?.value || '';
-      const teikokuScoreField  = document.getElementById('teikokuScore')?.value || '';
-      const isProfitField      = document.querySelector('input[name="isProfit"]:checked')?.value === 'true' ? '黒字' : '赤字';
-      const paidInCapitalField = document.getElementById('paidInCapital')?.value || '';
-      const registrationYears  = document.getElementById('registrationYears')?.value || '';
-      const orgCbs             = ['orgX2','orgAlna','orgNap','orgWcaInter','orgWcaOther']
-        .map(id => document.getElementById(id))
-        .filter(cb => cb.checked)
-        .map(cb => cb.value);
-      const membershipField    = orgCbs.join(',');
-      const blacklistField     = document.querySelector('input[name="onBlacklist"]:checked')?.value || '';
-      const partnerField       = document.querySelector('input[name="isPartner"]:checked')?.value || '';
-      const contractField      = document.querySelector('input[name="hasContract"]:checked')?.value || '';
-
-      const body = {
-        app: APP_ID,
-        record: {
-          "公司名":       { value: companyName },
-          "所在地域":     { value: regionField },
-          "客户类型":     { value: customerTypeField },
-          "公司性质":     { value: industryField },
-          "设立年数":     { value: establishmentYears },
-          "资本金":       { value: capitalJpy },
-          "帝国スコア":   { value: teikokuScoreField },
-          "决算":         { value: isProfitField },
-          "公司实缴资本": { value: paidInCapitalField },
-          "公司注册年限": { value: registrationYears },
-          "会员组织":     { value: membershipField },
-          "会员黑名单":   { value: blacklistField },
-          "OPTEC合作方":  { value: partnerField },
-          "合同状态":     { value: contractField },
-          "授信额度":     { value: credit_limit },
-          "付款条件":     { value: payment_term }
-        }
+      // 5.1 先把要传给 GAS 的所有字段重构为一个对象
+      const payload = {
+        appId:   972,  // kintone 应用 ID
+        companyName:       document.getElementById('companyName').value,
+        region:            region,
+        customerType:      document.querySelector('input[name="customerType"]:checked')?.value || '',
+        industry:          document.getElementById('customerIndustry')?.value || '',
+        establishmentYears:document.getElementById('establishmentYears')?.value || '',
+        capitalJpy:        document.getElementById('capitalJpy')?.value || '',
+        teikokuScore:      document.getElementById('teikokuScore')?.value || '',
+        isProfit:          document.querySelector('input[name="isProfit"]:checked')?.value === 'true',
+        paidInCapital:     document.getElementById('paidInCapital')?.value || '',
+        registrationYears: document.getElementById('registrationYears')?.value || '',
+        membership:        (['orgX2','orgAlna','orgNap','orgWcaInter','orgWcaOther']
+                              .map(id => document.getElementById(id))
+                              .filter(cb => cb.checked)
+                              .map(cb => cb.value)
+                              .join(',')),
+        blacklist:         document.querySelector('input[name="onBlacklist"]:checked')?.value || '',
+        partner:           document.querySelector('input[name="isPartner"]:checked')?.value || '',
+        contract:          document.querySelector('input[name="hasContract"]:checked')?.value || '',
+        creditLimit:       credit_limit,
+        paymentTerm:       payment_term
       };
 
-      const DOMAIN = 'si8qxbanrfkx.cybozu.com';  // ← 改成你的 kintone 子域名
-      fetch(`https://${DOMAIN}/k/v1/record.json`, {
-
-        method:  'POST',
+      // 5.2 发请求给 GAS
+      fetch('https://script.google.com/macros/s/AKfycbz2RS2luYqaqLzn0fvgNrfxR2xRWF45DO0Dhj06xNkE9UFIz16skoI3X23jl_fdKlsV/exec', {
+        method: 'POST',
         headers: {
-          'X-Cybozu-API-Token': API_TOKEN,
-          'Content-Type':      'application/json'
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify(payload)
       })
-      .then(r => r.json())
-      .then(j => console.log('新增成功', j))
-      .catch(e => console.error('新增失败', e));
+      .then(res => res.json())
+      .then(result => {
+        console.log('GAS 返回：', result);
+        // 如果需要，可在前端进一步提示用户
+      })
+      .catch(err => {
+        console.error('调用 GAS 失败', err);
+      });
     })();
 
     // 6. 自动滚动到结果区域
