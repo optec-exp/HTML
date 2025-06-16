@@ -180,9 +180,9 @@
         <div class="form-section">
           <label class="section-title">2. 客户类型</label>
           <div class="radio-group">
-            <input type="radio" id="typeDirect" name="customerType" value="direct" onchange="toggleSubSections()">
+            <input type="radio" id="typeDirect" name="customerType" value="直客" onchange="toggleSubSections()">
             <label for="typeDirect">直客</label>
-            <input type="radio" id="typePeer" name="customerType" value="peer" onchange="toggleSubSections()">
+            <input type="radio" id="typePeer" name="customerType" value="同行" onchange="toggleSubSections()">
             <label for="typePeer">同行</label>
           </div>
         </div>
@@ -479,7 +479,7 @@
       form.append('paymentTerm',      payment_term);
 
       // 5.2 发 FormData，不带 headers
-      fetch('https://script.google.com/macros/s/AKfycbzlSkicL9jrpQKxVdIsGoi3OL3NuvKOkKZjzV2Ej_4-b5slraz46XCdf9Dav94DERQo/exec', {
+      fetch('https://script.google.com/macros/s/AKfycbyiai50fwxx1zPIr53fV9gDVTpjxsC25JLSLR9nD9C4pEZRD2yyBH-fnVCs1M-NqzpM/exec', {
         method: 'POST',
         body: form
       })
