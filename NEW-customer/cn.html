@@ -146,6 +146,10 @@
     <h1>客户账期与额度计算器</h1>
     <form id="calculatorForm">
       <div class="form-section">
+          <label class="section-title" for="companyNameInput">公司名</label>
+          <input type="text" id="companyNameInput" placeholder="请输入公司全名">
+      </div>
+      <div class="form-section">
         <label class="section-title" for="primaryRegionSelect">1. 客户公司所在地域</label>
         <select id="primaryRegionSelect" onchange="toggleSectionsByRegion()">
           <option value="">-- 请选择 --</option>
@@ -203,17 +207,16 @@
           <div class="checkbox-group">
             <input type="checkbox" id="orgNone" value="none" checked>
             <label for="orgNone">否</label>
+            <input type="checkbox" id="orgX2" value="X2">
             <label for="orgX2">X2</label>
             <input type="checkbox" id="orgAlna" value="ALNA">
             <label for="orgAlna">ALNA</label>
             <input type="checkbox" id="orgNap" value="NAP">
             <label for="orgNap">NAP</label>
-            <input type="checkbox" id="orgX2" value="X2">
-            <input type="checkbox" id="orgWcaInter" value="WCA_INTER">
+            <input type="checkbox" id="orgWcaInter" value="WCA INTER GLOBAL/WCA Time Critical">
             <label for="orgWcaInter">WCA INTER GLOBAL/WCA Time Critical</label>
-            <input type="checkbox" id="orgWcaOther" value="WCA_OTHER">
+            <input type="checkbox" id="orgWcaOther" value="WCA OTHER">
             <label for="orgWcaOther">WCA 其他组织</label>
-
           </div>
           <br>
           <label class="section-title">若为会员，是否在黑名单内？</label>
@@ -249,7 +252,6 @@
       </div>
 
       <input type="hidden" id="salesPrice">
-      <input type="hidden" id="companyName">
       <button type="button" onclick="calculate()">计算</button>
     </form>
 
@@ -262,25 +264,24 @@
 
 <script>
   window.onload = function() {
-    // URL 参数预填
     const params = new URLSearchParams(window.location.search);
     if (params.get('price')) {
       document.getElementById('salesPrice').value = params.get('price');
     }
+    // ★ 修正：从 URL 参数预填公司名到新的输入框
     if (params.get('companyName')) {
-      document.getElementById('companyName').value = params.get('companyName');
+      document.getElementById('companyNameInput').value = params.get('companyName');
     }
-    // “否” 与 各组织互斥
     const noneCb = document.getElementById('orgNone');
-    const orgCbs = ['orgWcaInter','orgWcaOther','orgAlna','orgNap','orgX2']
-      .map(id => document.getElementById(id));
+    const orgCbs = ['orgWcaInter','orgWcaOther','orgAlna','orgNap','orgX2'].map(id => document.getElementById(id));
     noneCb.addEventListener('change', () => {
-      if (noneCb.checked) orgCbs.forEach(cb => cb.checked = false);
+      if (noneCb.checked) orgCbs.forEach(cb => { if(cb) cb.checked = false });
     });
     orgCbs.forEach(cb => {
+      if (!cb) return;
       cb.addEventListener('change', () => {
         if (cb.checked) noneCb.checked = false;
-        else if (!orgCbs.some(x => x.checked)) noneCb.checked = true;
+        else if (!orgCbs.some(x => x && x.checked)) noneCb.checked = true;
       });
     });
   };
@@ -298,7 +299,9 @@
   }
 
   function toggleSubSections() {
-    const t = document.querySelector('input[name="customerType"]:checked').value;
+    const typeInput = document.querySelector('input[name="customerType"]:checked');
+    if (!typeInput) return;
+    const t = typeInput.value;
     document.getElementById('directCustomerFields').classList.add('hidden');
     document.getElementById('peerForwarderFields').classList.add('hidden');
     if (t === '直客') {
@@ -308,15 +311,26 @@
     }
   }
 
+  // --- ★★★ 这是完整的、修正后的 calculate() 函数 ★★★ ---
   function calculate() {
-    // 1. 校验
+    // 1. 基础校验
     const region = document.getElementById('primaryRegionSelect').value;
     if (!region) {
       alert("请首先选择客户公司所在地域！");
       return;
     }
+    const companyName = document.getElementById('companyNameInput').value.trim();
+    if (!companyName) {
+      alert("请输入公司名！");
+      return;
+    }
+    
+    // --- 进入“正在计算”状态 ---
+    const calcButton = document.querySelector('button[onclick="calculate()"]');
+    calcButton.textContent = '正在计算...';
+    calcButton.disabled = true;
 
-    // 2. 计算逻辑
+    // 2. 本地计算额度和账期
     let payment_term = '';
     let credit_limit = '';
     if (region === '日本') {
@@ -326,94 +340,55 @@
       const scoreStr     = document.getElementById('teikokuScore').value;
       const score        = scoreStr ? parseFloat(scoreStr) : null;
       const isProfit     = document.querySelector('input[name="isProfit"]:checked').value === 'true';
-
       if (years >= 10) {
         if (capital >= 10000000) {
-          if (score === null || score < 40) {
-            payment_term = "前払い"; credit_limit = "¥0";
-          } else if (score >= 51) {
-            payment_term = "末締め翌月末払い"; credit_limit = "¥10,000,000";
-          } else if (isProfit) {
-            payment_term = "末締め翌月末払い"; credit_limit = "¥3,500,000";
-          } else {
-            payment_term = "30日（立替金は前払い）"; credit_limit = "¥1,000,000";
-          }
+          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "¥0"; }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "¥10,000,000"; }
+          else if (isProfit) { payment_term = "末締め翌月末払い"; credit_limit = "¥3,500,000"; }
+          else { payment_term = "30日（立替金は前払い）"; credit_limit = "¥1,000,000"; }
         } else {
-          if (score === null || score < 40) {
-            payment_term = "前払い"; credit_limit = "¥0";
-          } else if (score >= 51) {
-            payment_term = "末締め翌月末払い"; credit_limit = "¥5,000,000";
-          } else if (isProfit) {
-            payment_term = "30日"; credit_limit = "¥2,000,000";
-          } else {
-            payment_term = "15日（立替金は前払い）"; credit_limit = "¥500,000";
-          }
+          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "¥0"; }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "¥5,000,000"; }
+          else if (isProfit) { payment_term = "30日"; credit_limit = "¥2,000,000"; }
+          else { payment_term = "15日（立替金は前払い）"; credit_limit = "¥500,000"; }
         }
       } else {
         if (capital >= 10000000) {
-          if (score === null || score < 40) {
-            payment_term = "前払い"; credit_limit = "¥0";
-          } else if (score >= 51) {
-            payment_term = "末締め翌月末払い"; credit_limit = "¥5,000,000";
-          } else if (isProfit) {
-            payment_term = "末締め翌月末払い"; credit_limit = "¥1,000,000";
-          } else {
-            payment_term = "30日（立替金は前払い）"; credit_limit = "¥500,000";
-          }
+          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "¥0"; }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "¥5,000,000"; }
+          else if (isProfit) { payment_term = "末締め翌月末払い"; credit_limit = "¥1,000,000"; }
+          else { payment_term = "30日（立替金は前払い）"; credit_limit = "¥500,000"; }
         } else {
-          if (score === null || score < 40) {
-            payment_term = "前払い"; credit_limit = "¥0";
-          } else if (score >= 51) {
-            payment_term = "末締め翌月末払い"; credit_limit = "¥1,000,000";
-          } else if (isProfit) {
-            payment_term = "30日"; credit_limit = "¥1,000,000";
-          } else {
-            payment_term = "7日（立替金は前払い）"; credit_limit = "¥500,000";
-          }
+          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "¥0"; }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "¥1,000,000"; }
+          else if (isProfit) { payment_term = "30日"; credit_limit = "¥1,000,000"; }
+          else { payment_term = "7日（立替金は前払い）"; credit_limit = "¥500,000"; }
         }
       }
     } else {
       const customerType = document.querySelector('input[name="customerType"]:checked');
       const salesPrice   = parseFloat(document.getElementById('salesPrice').value) || 0;
-      if (!customerType) {
-        alert("请为其他地区客户选择客户类型！");
-        return;
-      }
-      if (customerType.value === 'direct') {
+      if (!customerType) { alert("请为其他地区客户选择客户类型！"); calcButton.textContent = '计算'; calcButton.disabled = false; return; }
+      if (customerType.value === '直客') {
         let grade = 'C';
         const regionLabel = region === '其他地区' ? '其他' : region;
         const industry    = document.getElementById('customerIndustry').value;
         if (industry === "汽车及汽车配件") grade = "A";
-        else if (industry === "电子部品") {
-          grade = regionLabel === "欧洲" ? "A"
-                : regionLabel === "日企海外分公司(包括中国)" ? "B" : "C";
-        } else if (industry === "服装/小商品") {
-          grade = regionLabel === "欧洲" ? "B" : "C";
-        } else if (industry === "贸易公司") {
-          grade = regionLabel === "日企海外分公司(包括中国)" ? "A" : "C";
-        }
-        if (grade === "A") {
-          credit_limit = "JPY 2,000,000";
-          payment_term = salesPrice <= 100000 ? "30天账期(报价单盖章)" : "预付款";
-        } else if (grade === "B") {
-          credit_limit = "JPY 1,350,000";
-          payment_term = salesPrice <= 70000  ? "15天账期(报价单盖章)" : "预付款";
-        } else {
-          credit_limit = "JPY 0";
-          payment_term = "预付款(报价单盖章)";
-        }
+        else if (industry === "电子部品") { grade = regionLabel === "欧洲" ? "A" : regionLabel === "日企海外分公司(包括中国)" ? "B" : "C"; }
+        else if (industry === "服装/小商品") { grade = regionLabel === "欧洲" ? "B" : "C"; }
+        else if (industry === "贸易公司") { grade = regionLabel === "日企海外分公司(包括中国)" ? "A" : "C"; }
+        if (grade === "A") { credit_limit = "JPY 2,000,000"; payment_term = salesPrice <= 100000 ? "30天账期(报价单盖章)" : "预付款"; }
+        else if (grade === "B") { credit_limit = "JPY 1,350,000"; payment_term = salesPrice <= 70000  ? "15天账期(报价单盖章)" : "预付款"; }
+        else { credit_limit = "JPY 0"; payment_term = "预付款(报价单盖章)"; }
       } else {
-        const orgWcaInter = document.getElementById('orgWcaInter').checked;
-        const orgX2       = document.getElementById('orgX2').checked;
-        const orgNap      = document.getElementById('orgNap').checked;
-        const orgWcaOther = document.getElementById('orgWcaOther').checked;
-        const orgAlna     = document.getElementById('orgAlna').checked;
+        const orgs = ['orgWcaInter', 'orgX2', 'orgAlna', 'orgNap', 'orgWcaOther'].filter(id => {
+          const cb = document.getElementById(id);
+          return cb && cb.checked;
+        });
         const limits = [];
-        if (orgWcaInter) limits.push(13000000);
-        if (orgX2)       limits.push(13000000);
-        if (orgNap)      limits.push(6600000);
-        if (orgWcaOther) limits.push(6600000);
-        if (orgAlna)     limits.push(1000000);
+        if (orgs.some(id => ['orgWcaInter', 'orgX2'].includes(id.id))) limits.push(13000000);
+        if (orgs.some(id => ['orgNap', 'orgWcaOther'].includes(id.id))) limits.push(6600000);
+        if (orgs.includes('orgAlna')) limits.push(1000000);
         if (limits.length > 0) {
           payment_term = "30日";
           credit_limit = `¥${Math.max(...limits).toLocaleString()}`;
@@ -421,83 +396,82 @@
           const isPartner   = document.querySelector('input[name="isPartner"]:checked').value === 'yes';
           const hasContract = document.querySelector('input[name="hasContract"]:checked').value === 'yes';
           if (isPartner) {
-            if (hasContract) {
-              payment_term = "按签订的合同账期额度执行";
-              credit_limit = "按签订的合同账期额度执行";
-            } else {
-              payment_term = "次月月末";
-              credit_limit = "JPY 2,000,000";
-            }
+            if (hasContract) { payment_term = "按签订的合同账期额度执行"; credit_limit = "按签订的合同账期额度执行"; }
+            else { payment_term = "次月月末"; credit_limit = "JPY 2,000,000"; }
           } else {
             const paidCap = parseFloat(document.getElementById('paidInCapital').value)   || 0;
             const regY    = parseFloat(document.getElementById('registrationYears').value) || 0;
-            if (paidCap >= 5000 && regY >= 10) {
-              payment_term = "15天账期(报价单盖章)";
-              credit_limit = "JPY 1,000,000";
-            } else {
-              payment_term = "预付款(报价单盖章)";
-              credit_limit = "JPY 0";
-            }
+            if (paidCap >= 5000 && regY >= 10) { payment_term = "15天账期(报价单盖章)"; credit_limit = "JPY 1,000,000"; }
+            else { payment_term = "预付款(报价单盖章)"; credit_limit = "JPY 0"; }
           }
         }
       }
     }
+    
+    // 3. 准备所有数据发送给 GAS
+    const form = new FormData();
+    form.append('appId',            972);
+    form.append('companyName',      companyName);
+    form.append('region',           region);
+    form.append('customerType',     document.querySelector('input[name="customerType"]:checked')?.value || '');
+    form.append('industry',         document.getElementById('customerIndustry')?.value || '');
+    form.append('establishmentYears',document.getElementById('establishmentYears')?.value || '');
+    form.append('capitalJpy',       document.getElementById('capitalJpy')?.value || '');
+    form.append('teikokuScore',     document.getElementById('teikokuScore')?.value || '');
+    form.append('isProfit',         document.querySelector('input[name="isProfit"]:checked')?.value || '');
+    form.append('paidInCapital',    document.getElementById('paidInCapital')?.value || '');
+    form.append('registrationYears',document.getElementById('registrationYears')?.value || '');
+    form.append('membership',       (['orgX2','orgAlna','orgNap','orgWcaInter','orgWcaOther']
+                                  .map(id => document.getElementById(id))
+                                  .filter(cb => cb && cb.checked)
+                                  .map(cb => cb.value)
+                                  .join(',')));
+    form.append('blacklist',        document.querySelector('input[name="onBlacklist"]:checked')?.value || '');
+    form.append('partner',          document.querySelector('input[name="isPartner"]:checked')?.value || '');
+    form.append('contract',         document.querySelector('input[name="hasContract"]:checked')?.value || '');
+    form.append('creditLimit',      credit_limit);
+    form.append('paymentTerm',      payment_term);
 
-    // 3. 渲染结果
-    const results = document.getElementById('results');
-    document.getElementById('resultCreditLimit').innerHTML = `授信额度: <span>${credit_limit}</span>`;
-    document.getElementById('resultPaymentTerm').innerHTML   = `付款条件: <span>${payment_term}</span>`;
-    results.classList.add('visible');
+    const gasUrl = 'https://script.google.com/macros/s/AKfycbwaS-D1aQakrhhHFuCwHOGMg2gO0KP6CHLd13vD8K43FD6fhRYPQhtbNOgCEY6Ld6HD/exec'; // <--- ★★★ 请务必替换为新部署的URL ★★★
 
-    // 4. 隐藏表单
-    document.getElementById('calculatorForm').classList.add('hidden');
+    // 4. 发送请求并根据返回结果执行不同操作
+    fetch(gasUrl, {
+      method: 'POST',
+      body: form
+    })
+    .then(res => res.json())
+    .then(result => {
+      console.log('GAS 返回：', result);
+      const resultsDiv = document.getElementById('results');
 
-    // 5. 调用 GAS 更新 kintone
-    (function(){
-      // 5.1 构造 FormData
-      const form = new FormData();
-      form.append('appId',            972);
-      form.append('companyName',      document.getElementById('companyName').value);
-      form.append('region',           region);
-      form.append('customerType',     document.querySelector('input[name="customerType"]:checked')?.value || '');
-      form.append('industry',         document.getElementById('customerIndustry')?.value || '');
-      form.append('establishmentYears',document.getElementById('establishmentYears')?.value || '');
-      form.append('capitalJpy',       document.getElementById('capitalJpy')?.value || '');
-      form.append('teikokuScore',     document.getElementById('teikokuScore')?.value || '');
-      form.append('isProfit',         document.querySelector('input[name="isProfit"]:checked')?.value === 'true');
-      form.append('paidInCapital',    document.getElementById('paidInCapital')?.value || '');
-      form.append('registrationYears',document.getElementById('registrationYears')?.value || '');
-      form.append('membership',       (['orgX2','orgAlna','orgNap','orgWcaInter','orgWcaOther']
-                                    .map(id => document.getElementById(id))
-                                    .filter(cb => cb.checked)
-                                    .map(cb => cb.value)
-                                    .join(',')));
-      form.append('blacklist',        document.querySelector('input[name="onBlacklist"]:checked')?.value || '');
-      form.append('partner',          document.querySelector('input[name="isPartner"]:checked')?.value || '');
-      form.append('contract',         document.querySelector('input[name="hasContract"]:checked')?.value || '');
-      form.append('creditLimit',      credit_limit);
-      form.append('paymentTerm',      payment_term);
-
-      // 5.2 发 FormData，不带 headers
-      fetch('https://script.google.com/macros/s/AKfycbwaS-D1aQakrhhHFuCwHOGMg2gO0KP6CHLd13vD8K43FD6fhRYPQhtbNOgCEY6Ld6HD/exec', {
-        method: 'POST',
-        body: form
-      })
-      .then(res => res.json())
-      .then(result => {
-        console.log('GAS 返回：', result);
-      })
-      .catch(err => {
-        console.error('调用 GAS 失败', err);
-      });
-    })();
-
-    // 6. 自动滚动到结果区域
-    results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (result.status === 'success') {
+        // 成功：显示结果并隐藏表单
+        document.getElementById('resultCreditLimit').innerHTML = `授信额度: <span>${result.data.creditLimit}</span>`;
+        document.getElementById('resultPaymentTerm').innerHTML   = `付款条件: <span>${result.data.paymentTerm}</span>`;
+        resultsDiv.classList.add('visible');
+        document.getElementById('calculatorForm').classList.add('hidden');
+        resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (result.status === 'duplicate') {
+        // 重复：弹出提示并恢复按钮
+        alert('贵司已提交过，如需修改请联系我司负责人');
+        calcButton.textContent = '计算';
+        calcButton.disabled = false;
+      } else {
+        // 其他错误：弹出错误信息并恢复按钮
+        alert('发生错误: ' + (result.message || '未知错误'));
+        calcButton.textContent = '计算';
+        calcButton.disabled = false;
+      }
+    })
+    .catch(err => {
+      console.error('调用 GAS 失败', err);
+      alert('调用后端服务失败，请检查网络或联系管理员。');
+      // 恢复按钮
+      calcButton.textContent = '计算';
+      calcButton.disabled = false;
+    });
   }
 </script>
 
-
 </body>
 </html>
-
