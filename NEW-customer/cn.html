@@ -21,7 +21,7 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Montserrat', 'Noto Sans SC', sans-serif;
       background: var(--bg-light);
       color: var(--text-color);
       display: flex;
@@ -53,15 +53,16 @@
       font-size: 1rem;
       color: var(--primary-color);
     }
-    select, input[type="number"] {
+    select, input[type="text"], input[type="number"] {
       width: 100%;
       padding: 12px 16px;
       border: 1px solid #d1d7e0;
       border-radius: var(--border-radius);
       font-size: 1rem;
       transition: border var(--transition);
+      font-family: inherit;
     }
-    select:focus, input[type="number"]:focus {
+    select:focus, input[type="text"]:focus, input[type="number"]:focus {
       outline: none;
       border-color: var(--accent-color);
     }
@@ -70,6 +71,7 @@
       flex-wrap: nowrap;
       gap: 12px;
       overflow-x: auto;
+      padding-bottom: 5px; /* for scrollbar */
     }
     .radio-group input,
     .checkbox-group input {
@@ -111,11 +113,15 @@
       cursor: pointer;
       transition: background var(--transition), transform var(--transition);
     }
-    button:hover {
+    button:hover:not(:disabled) {
       background: #162f6b;
       transform: translateY(-2px);
     }
-    button:active { transform: translateY(0); }
+    button:disabled {
+      background-color: #a0a0a0;
+      cursor: not-allowed;
+    }
+    button:active:not(:disabled) { transform: translateY(0); }
     #results {
       margin-top: 30px;
       padding: 30px;
@@ -139,6 +145,45 @@
       color: var(--accent-color);
     }
     .hidden { display: none; }
+    
+    /* Custom Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+    }
+    .modal-content {
+        background-color: #ffffff;
+        margin: auto;
+        padding: 30px;
+        border-radius: var(--border-radius);
+        width: 90%;
+        max-width: 450px;
+        text-align: center;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        animation: fadeIn 0.3s ease;
+    }
+    .modal-content p {
+        margin: 0 0 25px;
+        font-size: 1rem;
+        line-height: 1.6;
+    }
+    .modal-button {
+        padding: 12px 28px;
+        font-size: 1rem;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
   </style>
 </head>
 <body>
@@ -192,7 +237,7 @@
         </div>
 
         <div id="directCustomerFields" class="form-section hidden">
-          <label class="section-title" for="customerIndustry">公司性质 (行业)</label>
+          <label class="section-title">公司性质 (行业)</label>
           <select id="customerIndustry">
             <option value="服装/小商品">服装/小商品</option>
             <option value="电子部品">电子部品</option>
@@ -262,16 +307,25 @@
     </div>
   </div>
 
+  <!-- Custom Modal HTML -->
+  <div id="customAlert" class="modal">
+    <div class="modal-content">
+      <p id="customAlertMessage"></p>
+      <button id="customAlertOk" class="modal-button">确定</button>
+    </div>
+  </div>
+
+
 <script>
   window.onload = function() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('price')) {
       document.getElementById('salesPrice').value = params.get('price');
     }
-    // ★ 修正：从 URL 参数预填公司名到新的输入框
     if (params.get('companyName')) {
       document.getElementById('companyNameInput').value = params.get('companyName');
     }
+    // Checkbox logic
     const noneCb = document.getElementById('orgNone');
     const orgCbs = ['orgWcaInter','orgWcaOther','orgAlna','orgNap','orgX2'].map(id => document.getElementById(id));
     noneCb.addEventListener('change', () => {
@@ -284,7 +338,19 @@
         else if (!orgCbs.some(x => x && x.checked)) noneCb.checked = true;
       });
     });
+
+    // Custom Modal event listener
+    document.getElementById('customAlertOk').addEventListener('click', function() {
+      document.getElementById('customAlert').style.display = 'none';
+    });
   };
+  
+  // Custom alert function
+  function showCustomAlert(message) {
+    document.getElementById('customAlertMessage').textContent = message;
+    document.getElementById('customAlert').style.display = 'flex';
+  }
+
 
   function toggleSectionsByRegion() {
     const r = document.getElementById('primaryRegionSelect').value;
@@ -310,27 +376,31 @@
       document.getElementById('peerForwarderFields').classList.remove('hidden');
     }
   }
+  
+  function systemAlert(message) {
+      document.getElementById('customAlertMessage').textContent = message;
+      document.getElementById('customAlert').style.display = 'flex';
+  }
 
-  // --- ★★★ 这是完整的、修正后的 calculate() 函数 ★★★ ---
   function calculate() {
-    // 1. 基础校验
+    // 1. Basic validation
     const region = document.getElementById('primaryRegionSelect').value;
     if (!region) {
-      alert("请首先选择客户公司所在地域！");
+      systemAlert("请首先选择客户公司所在地域！");
       return;
     }
     const companyName = document.getElementById('companyNameInput').value.trim();
     if (!companyName) {
-      alert("请输入公司名！");
+      systemAlert("请输入公司名！");
       return;
     }
     
-    // --- 进入“正在计算”状态 ---
+    // --- Set "calculating" state ---
     const calcButton = document.querySelector('button[onclick="calculate()"]');
     calcButton.textContent = '正在计算...';
     calcButton.disabled = true;
 
-    // 2. 本地计算额度和账期
+    // 2. Local calculation for credit and payment term
     let payment_term = '';
     let credit_limit = '';
     if (region === '日本') {
@@ -342,33 +412,33 @@
       const isProfit     = document.querySelector('input[name="isProfit"]:checked').value === 'true';
       if (years >= 10) {
         if (capital >= 10000000) {
-          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "¥0"; }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "¥10,000,000"; }
-          else if (isProfit) { payment_term = "末締め翌月末払い"; credit_limit = "¥3,500,000"; }
-          else { payment_term = "30日（立替金は前払い）"; credit_limit = "¥1,000,000"; }
+          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "0"; }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "10,000,000"; }
+          else if (isProfit) { payment_term = "末締め翌月末払い"; credit_limit = "3,500,000"; }
+          else { payment_term = "30日（立替金は前払い）"; credit_limit = "1,000,000"; }
         } else {
-          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "¥0"; }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "¥5,000,000"; }
-          else if (isProfit) { payment_term = "30日"; credit_limit = "¥2,000,000"; }
-          else { payment_term = "15日（立替金は前払い）"; credit_limit = "¥500,000"; }
+          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "0"; }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "5,000,000"; }
+          else if (isProfit) { payment_term = "30日"; credit_limit = "2,000,000"; }
+          else { payment_term = "15日（立替金は前払い）"; credit_limit = "500,000"; }
         }
       } else {
         if (capital >= 10000000) {
-          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "¥0"; }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "¥5,000,000"; }
-          else if (isProfit) { payment_term = "末締め翌月末払い"; credit_limit = "¥1,000,000"; }
-          else { payment_term = "30日（立替金は前払い）"; credit_limit = "¥500,000"; }
+          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "0"; }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "5,000,000"; }
+          else if (isProfit) { payment_term = "末締め翌月末払い"; credit_limit = "1,000,000"; }
+          else { payment_term = "30日（立替金は前払い）"; credit_limit = "500,000"; }
         } else {
-          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "¥0"; }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "¥1,000,000"; }
-          else if (isProfit) { payment_term = "30日"; credit_limit = "¥1,000,000"; }
-          else { payment_term = "7日（立替金は前払い）"; credit_limit = "¥500,000"; }
+          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "0"; }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "1,000,000"; }
+          else if (isProfit) { payment_term = "30日"; credit_limit = "1,000,000"; }
+          else { payment_term = "7日（立替金は前払い）"; credit_limit = "500,000"; }
         }
       }
     } else {
       const customerType = document.querySelector('input[name="customerType"]:checked');
       const salesPrice   = parseFloat(document.getElementById('salesPrice').value) || 0;
-      if (!customerType) { alert("请为其他地区客户选择客户类型！"); calcButton.textContent = '计算'; calcButton.disabled = false; return; }
+      if (!customerType) { systemAlert("请为其他地区客户选择客户类型！"); calcButton.textContent = '计算'; calcButton.disabled = false; return; }
       if (customerType.value === '直客') {
         let grade = 'C';
         const regionLabel = region === '其他地区' ? '其他' : region;
@@ -384,10 +454,10 @@
         const orgs = ['orgWcaInter', 'orgX2', 'orgAlna', 'orgNap', 'orgWcaOther'].filter(id => {
           const cb = document.getElementById(id);
           return cb && cb.checked;
-        });
+        }).map(cb => cb.id);
         const limits = [];
-        if (orgs.some(id => ['orgWcaInter', 'orgX2'].includes(id.id))) limits.push(13000000);
-        if (orgs.some(id => ['orgNap', 'orgWcaOther'].includes(id.id))) limits.push(6600000);
+        if (orgs.some(id => ['orgWcaInter', 'orgX2'].includes(id))) limits.push(13000000);
+        if (orgs.some(id => ['orgNap', 'orgWcaOther'].includes(id))) limits.push(6600000);
         if (orgs.includes('orgAlna')) limits.push(1000000);
         if (limits.length > 0) {
           payment_term = "30日";
@@ -396,8 +466,15 @@
           const isPartner   = document.querySelector('input[name="isPartner"]:checked').value === 'yes';
           const hasContract = document.querySelector('input[name="hasContract"]:checked').value === 'yes';
           if (isPartner) {
-            if (hasContract) { payment_term = "按签订的合同账期额度执行"; credit_limit = "按签订的合同账期额度执行"; }
-            else { payment_term = "次月月末"; credit_limit = "JPY 2,000,000"; }
+            // ★★★★★ THIS IS THE MODIFIED LOGIC ★★★★★
+            if (hasContract) {
+              credit_limit = "0";
+              payment_term = "30天";
+              showCustomAlert("计算结果为默认值，具体额度与账期将按签订的合同账期额度执行");
+            } else { 
+              payment_term = "次月月末";
+              credit_limit = "JPY 2,000,000";
+            }
           } else {
             const paidCap = parseFloat(document.getElementById('paidInCapital').value)   || 0;
             const regY    = parseFloat(document.getElementById('registrationYears').value) || 0;
@@ -408,7 +485,7 @@
       }
     }
     
-    // 3. 准备所有数据发送给 GAS
+    // 3. Prepare data to send to GAS
     const form = new FormData();
     form.append('appId',            972);
     form.append('companyName',      companyName);
@@ -432,41 +509,40 @@
     form.append('creditLimit',      credit_limit);
     form.append('paymentTerm',      payment_term);
 
-    const gasUrl = 'https://script.google.com/macros/s/AKfycbwIUx9yiHEIeCv7Gh-jUNoXTmjc6ntAwXmzZc1JzIEmVvHUnsvS3cgHTPGgXXBcbCIG/exec'; // <--- ★★★ 请务必替换为新部署的URL ★★★
+    // ★★★ 请务必替换为新部署的URL ★★★
+    const gasUrl = 'https://script.google.com/macros/s/AKfycbwaS-D1aQakrhhHFuCwHOGMg2gO0KP6CHLd13vD8K43FD6fhRYPQhtbNOgCEY6Ld6HD/exec'; 
 
-    // 4. 发送请求并根据返回结果执行不同操作
+    // 4. Send request and handle response
     fetch(gasUrl, {
       method: 'POST',
       body: form
     })
     .then(res => res.json())
     .then(result => {
-      console.log('GAS 返回：', result);
+      console.log('GAS Response:', result);
       const resultsDiv = document.getElementById('results');
 
+      // Reset button
+      calcButton.textContent = '计算';
+      calcButton.disabled = false;
+
       if (result.status === 'success') {
-        // 成功：显示结果并隐藏表单
+        // Success: Show results and hide form
         document.getElementById('resultCreditLimit').innerHTML = `授信额度: <span>${result.data.creditLimit}</span>`;
         document.getElementById('resultPaymentTerm').innerHTML   = `付款条件: <span>${result.data.paymentTerm}</span>`;
         resultsDiv.classList.add('visible');
         document.getElementById('calculatorForm').classList.add('hidden');
         resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else if (result.status === 'duplicate') {
-        // 重复：弹出提示并恢复按钮
-        alert('贵司已提交过，如需修改请联系我司负责人');
-        calcButton.textContent = '计算';
-        calcButton.disabled = false;
+        systemAlert('贵司已提交过，如需修改请联系我司负责人');
       } else {
-        // 其他错误：弹出错误信息并恢复按钮
-        alert('发生错误: ' + (result.message || '未知错误'));
-        calcButton.textContent = '计算';
-        calcButton.disabled = false;
+        systemAlert('发生错误: ' + (result.message || '未知错误'));
       }
     })
     .catch(err => {
-      console.error('调用 GAS 失败', err);
-      alert('调用后端服务失败，请检查网络或联系管理员。');
-      // 恢复按钮
+      console.error('Call to GAS failed', err);
+      systemAlert('调用后端服务失败，请检查网络或联系管理员。');
+      // Reset button
       calcButton.textContent = '计算';
       calcButton.disabled = false;
     });
