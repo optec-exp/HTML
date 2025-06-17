@@ -402,7 +402,12 @@
 
     // 2. Local calculation for credit and payment term
     let payment_term = '';
-    let credit_limit = '';
+    // ★★★★★ MODIFICATION START ★★★★★
+    // We now use two variables for credit limit.
+    let credit_limit_for_data = '0';    // Clean number for the backend
+    let credit_limit_for_display = '0'; // Formatted string for the user
+    // ★★★★★ MODIFICATION END ★★★★★
+
     if (region === '日本') {
       const years        = parseFloat(document.getElementById('establishmentYears').value) || 0;
       const capitalInput = parseFloat(document.getElementById('capitalJpy').value)       || 0;
@@ -410,29 +415,36 @@
       const scoreStr     = document.getElementById('teikokuScore').value;
       const score        = scoreStr ? parseFloat(scoreStr) : null;
       const isProfit     = document.querySelector('input[name="isProfit"]:checked').value === 'true';
+
+      // Helper to set both data and display values
+      const setLimit = (dataVal, displayVal) => {
+        credit_limit_for_data = dataVal;
+        credit_limit_for_display = displayVal;
+      };
+
       if (years >= 10) {
         if (capital >= 10000000) {
-          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "0"; }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "10,000,000"; }
-          else if (isProfit) { payment_term = "末締め翌月末払い"; credit_limit = "3,500,000"; }
-          else { payment_term = "30日（立替金は前払い）"; credit_limit = "1,000,000"; }
+          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('10000000', '10,000,000'); }
+          else if (isProfit) { payment_term = "末締め翌月末払い"; setLimit('3500000', '3,500,000'); }
+          else { payment_term = "30日（立替金は前払い）"; setLimit('1000000', '1,000,000'); }
         } else {
-          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "0"; }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "5,000,000"; }
-          else if (isProfit) { payment_term = "30日"; credit_limit = "2,000,000"; }
-          else { payment_term = "15日（立替金は前払い）"; credit_limit = "500,000"; }
+          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('5000000', '5,000,000'); }
+          else if (isProfit) { payment_term = "30日"; setLimit('2000000', '2,000,000'); }
+          else { payment_term = "15日（立替金は前払い）"; setLimit('500000', '500,000'); }
         }
       } else {
         if (capital >= 10000000) {
-          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "0"; }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "5,000,000"; }
-          else if (isProfit) { payment_term = "末締め翌月末払い"; credit_limit = "1,000,000"; }
-          else { payment_term = "30日（立替金は前払い）"; credit_limit = "500,000"; }
+          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('5000000', '5,000,000'); }
+          else if (isProfit) { payment_term = "末締め翌月末払い"; setLimit('1000000', '1,000,000'); }
+          else { payment_term = "30日（立替金は前払い）"; setLimit('500000', '500,000'); }
         } else {
-          if (score === null || score < 40) { payment_term = "前払い"; credit_limit = "0"; }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; credit_limit = "1,000,000"; }
-          else if (isProfit) { payment_term = "30日"; credit_limit = "1,000,000"; }
-          else { payment_term = "7日（立替金は前払い）"; credit_limit = "500,000"; }
+          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
+          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('1000000', '1,000,000'); }
+          else if (isProfit) { payment_term = "30日"; setLimit('1000000', '1,000,000'); }
+          else { payment_term = "7日（立替金は前払い）"; setLimit('500000', '500,000'); }
         }
       }
     } else {
@@ -447,39 +459,39 @@
         else if (industry === "电子部品") { grade = regionLabel === "欧洲" ? "A" : regionLabel === "日企海外分公司(包括中国)" ? "B" : "C"; }
         else if (industry === "服装/小商品") { grade = regionLabel === "欧洲" ? "B" : "C"; }
         else if (industry === "贸易公司") { grade = regionLabel === "日企海外分公司(包括中国)" ? "A" : "C"; }
-        if (grade === "A") { credit_limit = "JPY 2,000,000"; payment_term = salesPrice <= 100000 ? "30天账期(报价单盖章)" : "预付款"; }
-        else if (grade === "B") { credit_limit = "JPY 1,350,000"; payment_term = salesPrice <= 70000  ? "15天账期(报价单盖章)" : "预付款"; }
-        else { credit_limit = "JPY 0"; payment_term = "预付款(报价单盖章)"; }
+        if (grade === "A") { credit_limit_for_data = '2000000'; credit_limit_for_display = 'JPY 2,000,000'; payment_term = salesPrice <= 100000 ? "30天账期(报价单盖章)" : "预付款"; }
+        else if (grade === "B") { credit_limit_for_data = '1350000'; credit_limit_for_display = 'JPY 1,350,000'; payment_term = salesPrice <= 70000  ? "15天账期(报价单盖章)" : "预付款"; }
+        else { credit_limit_for_data = '0'; credit_limit_for_display = 'JPY 0'; payment_term = "预付款(报价单盖章)"; }
       } else {
-        const orgs = ['orgWcaInter', 'orgX2', 'orgAlna', 'orgNap', 'orgWcaOther'].filter(id => {
-          const cb = document.getElementById(id);
-          return cb && cb.checked;
-        }).map(cb => cb.id);
+        const orgs = ['orgWcaInter', 'orgX2', 'orgAlna', 'orgNap', 'orgWcaOther'].filter(id => document.getElementById(id)?.checked).map(cb => cb.id);
         const limits = [];
         if (orgs.some(id => ['orgWcaInter', 'orgX2'].includes(id))) limits.push(13000000);
         if (orgs.some(id => ['orgNap', 'orgWcaOther'].includes(id))) limits.push(6600000);
         if (orgs.includes('orgAlna')) limits.push(1000000);
         if (limits.length > 0) {
           payment_term = "30日";
-          credit_limit = `¥${Math.max(...limits).toLocaleString()}`;
+          const maxLimit = Math.max(...limits);
+          credit_limit_for_data = maxLimit.toString();
+          credit_limit_for_display = `¥${maxLimit.toLocaleString()}`;
         } else {
           const isPartner   = document.querySelector('input[name="isPartner"]:checked').value === 'yes';
           const hasContract = document.querySelector('input[name="hasContract"]:checked').value === 'yes';
           if (isPartner) {
-            // ★★★★★ THIS IS THE MODIFIED LOGIC ★★★★★
             if (hasContract) {
-              credit_limit = "0";
+              credit_limit_for_data = "0";
+              credit_limit_for_display = "0";
               payment_term = "30天";
               showCustomAlert("计算结果为默认值，具体额度与账期将按签订的合同账期额度执行");
             } else { 
               payment_term = "次月月末";
-              credit_limit = "JPY 2,000,000";
+              credit_limit_for_data = "2000000";
+              credit_limit_for_display = "JPY 2,000,000";
             }
           } else {
             const paidCap = parseFloat(document.getElementById('paidInCapital').value)   || 0;
             const regY    = parseFloat(document.getElementById('registrationYears').value) || 0;
-            if (paidCap >= 5000 && regY >= 10) { payment_term = "15天账期(报价单盖章)"; credit_limit = "JPY 1,000,000"; }
-            else { payment_term = "预付款(报价单盖章)"; credit_limit = "JPY 0"; }
+            if (paidCap >= 5000 && regY >= 10) { payment_term = "15天账期(报价单盖章)"; credit_limit_for_data = "1000000"; credit_limit_for_display = "JPY 1,000,000"; }
+            else { payment_term = "预付款(报价单盖章)"; credit_limit_for_data = "0"; credit_limit_for_display = "JPY 0"; }
           }
         }
       }
@@ -506,8 +518,9 @@
     form.append('blacklist',        document.querySelector('input[name="onBlacklist"]:checked')?.value || '');
     form.append('partner',          document.querySelector('input[name="isPartner"]:checked')?.value || '');
     form.append('contract',         document.querySelector('input[name="hasContract"]:checked')?.value || '');
-    form.append('creditLimit',      credit_limit);
     form.append('paymentTerm',      payment_term);
+    // ★★★★★ MODIFICATION: Send the clean numeric value ★★★★★
+    form.append('creditLimit',      credit_limit_for_data);
 
     // ★★★ 请务必替换为新部署的URL ★★★
     const gasUrl = 'https://script.google.com/macros/s/AKfycbwIUx9yiHEIeCv7Gh-jUNoXTmjc6ntAwXmzZc1JzIEmVvHUnsvS3cgHTPGgXXBcbCIG/exec'; 
@@ -527,9 +540,9 @@
       calcButton.disabled = false;
 
       if (result.status === 'success') {
-        // Success: Show results and hide form
-        document.getElementById('resultCreditLimit').innerHTML = `授信额度: <span>${result.data.creditLimit}</span>`;
-        document.getElementById('resultPaymentTerm').innerHTML   = `付款条件: <span>${result.data.paymentTerm}</span>`;
+        // ★★★★★ MODIFICATION: Use the local display variable for rendering ★★★★★
+        document.getElementById('resultCreditLimit').innerHTML = `授信额度: <span>${credit_limit_for_display}</span>`;
+        document.getElementById('resultPaymentTerm').innerHTML   = `付款条件: <span>${payment_term}</span>`;
         resultsDiv.classList.add('visible');
         document.getElementById('calculatorForm').classList.add('hidden');
         resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
