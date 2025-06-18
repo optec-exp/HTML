@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>客户账期与额度计算器</title>
+  <title>Customer Payment Term & Credit Limit Calculator</title>
 
-  <!-- 引入字体 -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
@@ -188,70 +187,70 @@
 </head>
 <body>
   <div class="container">
-    <h1>客户账期与额度计算器</h1>
+    <h1>Customer Payment Term & Credit Limit Calculator</h1>
     <form id="calculatorForm">
       <div class="form-section">
-          <label class="section-title" for="companyNameInput">公司名</label>
-          <input type="text" id="companyNameInput" placeholder="请输入公司全名">
+          <label class="section-title" for="companyNameInput">Company Name</label>
+          <input type="text" id="companyNameInput" placeholder="Enter the full company name">
       </div>
       <div class="form-section">
-        <label class="section-title" for="primaryRegionSelect">1. 客户公司所在地域</label>
+        <label class="section-title" for="primaryRegionSelect">1. Customer Company Region</label>
         <select id="primaryRegionSelect" onchange="toggleSectionsByRegion()">
-          <option value="">-- 请选择 --</option>
-          <option value="日本">日本</option>
-          <option value="欧洲">欧洲</option>
-          <option value="中国">中国</option>
-          <option value="日企海外分公司(包括中国)">日企海外分公司(包括中国)</option>
-          <option value="其他地区">其他地区</option>
+          <option value="">-- Please Select --</option>
+          <option value="日本">Japan</option>
+          <option value="欧洲">Europe</option>
+          <option value="中国">China</option>
+          <option value="日企海外分公司(包括中国)">Japanese Company Overseas Branch (incl. China)</option>
+          <option value="其他地区">Other Regions</option>
         </select>
       </div>
 
       <div id="japanSection" class="form-section hidden">
-        <label class="section-title" for="establishmentYears">设立年数 (年)</label>
-        <input type="number" id="establishmentYears" placeholder="请输入公司成立年数">
+        <label class="section-title" for="establishmentYears">Years of Establishment (Years)</label>
+        <input type="number" id="establishmentYears" placeholder="Enter years since establishment">
         <br><br>
-        <label class="section-title" for="capitalJpy">资本金 (万円)</label>
-        <input type="number" id="capitalJpy" placeholder="例如: 1000">
+        <label class="section-title" for="capitalJpy">Capital (in 10,000 JPY)</label>
+        <input type="number" id="capitalJpy" placeholder="e.g., 1000">
         <br><br>
-        <label class="section-title" for="teikokuScore">帝国データバンク スコア (点)</label>
-        <input type="number" id="teikokuScore" placeholder="若无评分请留空">
+        <label class="section-title" for="teikokuScore">Teikoku Databank Score (Points)</label>
+        <input type="number" id="teikokuScore" placeholder="Leave blank if no score">
         <br><br>
-        <label class="section-title">前期决算</label>
+        <label class="section-title">Previous Fiscal Year Result</label>
         <div class="radio-group">
           <input type="radio" id="isProfitYes" name="isProfit" value="true" checked>
-          <label for="isProfitYes">黒字</label>
+          <label for="isProfitYes">Profit</label>
           <input type="radio" id="isProfitNo" name="isProfit" value="false">
-          <label for="isProfitNo">赤字</label>
+          <label for="isProfitNo">Loss</label>
         </div>
       </div>
 
       <div id="otherRegionsSection" class="hidden">
         <div class="form-section">
-          <label class="section-title">2. 客户类型</label>
+          <label class="section-title">2. Customer Type</label>
           <div class="radio-group">
             <input type="radio" id="typeDirect" name="customerType" value="直客" onchange="toggleSubSections()">
-            <label for="typeDirect">直客</label>
+            <label for="typeDirect">Direct Customer</label>
             <input type="radio" id="typePeer" name="customerType" value="同行" onchange="toggleSubSections()">
-            <label for="typePeer">同行</label>
+            <label for="typePeer">Peer Forwarder</label>
           </div>
         </div>
 
         <div id="directCustomerFields" class="form-section hidden">
-          <label class="section-title">公司性质 (行业)</label>
+          <label class="section-title">Company Type (Industry)</label>
           <select id="customerIndustry">
-            <option value="服装/小商品">服装/小商品</option>
-            <option value="电子部品">电子部品</option>
-            <option value="汽车及汽车配件">汽车及汽车配件</option>
-            <option value="贸易公司">贸易公司</option>
-            <option value="其他">其他</option>
+            <option value="服装/小商品">Apparel / Small Goods</option>
+            <option value="电子部品">Electronic Components</option>
+            <option value="汽车及汽车配件">Automotive & Parts</option>
+            <option value="贸易公司">Trading Company</option>
+            <option value="其他">Other</option>
           </select>
         </div>
 
         <div id="peerForwarderFields" class="form-section hidden">
-          <label class="section-title">是否属于会员组织？</label>
+          <label class="section-title">Member of any organization?</label>
           <div class="checkbox-group">
             <input type="checkbox" id="orgNone" value="none" checked>
-            <label for="orgNone">否</label>
+            <label for="orgNone">No</label>
             <input type="checkbox" id="orgX2" value="X2">
             <label for="orgX2">X2</label>
             <input type="checkbox" id="orgAlna" value="ALNA">
@@ -261,57 +260,56 @@
             <input type="checkbox" id="orgWcaInter" value="WCA INTER GLOBAL/WCA Time Critical">
             <label for="orgWcaInter">WCA INTER GLOBAL/WCA Time Critical</label>
             <input type="checkbox" id="orgWcaOther" value="WCA OTHER">
-            <label for="orgWcaOther">WCA 其他组织</label>
+            <label for="orgWcaOther">WCA Other Networks</label>
           </div>
           <br>
-          <label class="section-title">若为会员，是否在黑名单内？</label>
+          <label class="section-title">If a member, are they on a blacklist?</label>
           <div class="radio-group">
             <input type="radio" id="blacklistYes" name="onBlacklist" value="yes">
-            <label for="blacklistYes">是</label>
+            <label for="blacklistYes">Yes</label>
             <input type="radio" id="blacklistNo" name="onBlacklist" value="no" checked>
-            <label for="blacklistNo">否</label>
+            <label for="blacklistNo">No</label>
           </div>
           <hr style="margin:24px 0;">
-          <label class="section-title">是否为OPTEC合作方？</label>
+          <label class="section-title">Is an OPTEC Partner?</label>
           <div class="radio-group">
             <input type="radio" id="partnerYes" name="isPartner" value="yes">
-            <label for="partnerYes">是</label>
+            <label for="partnerYes">Yes</label>
             <input type="radio" id="partnerNo" name="isPartner" value="no" checked>
-            <label for="partnerNo">否</label>
+            <label for="partnerNo">No</label>
           </div>
           <br>
-          <label class="section-title">若为合作方，是否有合同？</label>
+          <label class="section-title">If a partner, is there a contract?</label>
           <div class="radio-group">
             <input type="radio" id="contractYes" name="hasContract" value="yes">
-            <label for="contractYes">是</label>
+            <label for="contractYes">Yes</label>
             <input type="radio" id="contractNo" name="hasContract" value="no" checked>
-            <label for="contractNo">否</label>
+            <label for="contractNo">No</label>
           </div>
           <hr style="margin:24px 0;">
-          <label class="section-title" for="paidInCapital">公司实缴资本 (CNY 万)</label>
-          <input type="number" id="paidInCapital" placeholder="例如: 5000">
+          <label class="section-title" for="paidInCapital">Paid-in Capital (in 10,000 CNY)</label>
+          <input type="number" id="paidInCapital" placeholder="e.g., 5000">
           <br><br>
-          <label class="section-title" for="registrationYears">公司注册年限</label>
-          <input type="number" id="registrationYears" placeholder="例如: 10">
+          <label class="section-title" for="registrationYears">Years of Registration</label>
+          <input type="number" id="registrationYears" placeholder="e.g., 10">
         </div>
       </div>
 
       <input type="hidden" id="salesPrice">
-      <button type="button" onclick="calculate()">计算</button>
+      <button type="button" onclick="calculate()">Calculate</button>
     </form>
 
     <div id="results">
-      <h2>计算结果</h2>
+      <h2>Calculation Results</h2>
       <div class="result-item" id="resultCreditLimit"></div>
       <div class="result-item" id="resultPaymentTerm"></div>
     </div>
   </div>
 
-  <!-- Custom Modal HTML -->
   <div id="customAlert" class="modal">
     <div class="modal-content">
       <p id="customAlertMessage"></p>
-      <button id="customAlertOk" class="modal-button">确定</button>
+      <button id="customAlertOk" class="modal-button">OK</button>
     </div>
   </div>
 
@@ -395,22 +393,23 @@
     // 1. Basic validation
     const region = document.getElementById('primaryRegionSelect').value;
     if (!region) {
-      systemAlert("请首先选择客户公司所在地域！");
+      systemAlert("Please select the customer's region first!");
       return;
     }
     const companyName = document.getElementById('companyNameInput').value.trim();
     if (!companyName) {
-      systemAlert("请输入公司名！");
+      systemAlert("Please enter the company name!");
       return;
     }
     
     // --- Set "calculating" state ---
     const calcButton = document.querySelector('button[onclick="calculate()"]');
-    calcButton.textContent = '正在计算...';
+    calcButton.textContent = 'Calculating...';
     calcButton.disabled = true;
 
     // 2. Local calculation for credit and payment term
-    let payment_term = '';
+    let payment_term = ''; // This holds the original value for the backend
+    let payment_term_display = ''; // This holds the translated value for the UI
     let credit_limit_for_data = '0';
     let credit_limit_for_display = '0';
 
@@ -422,40 +421,42 @@
       const score        = scoreStr ? parseFloat(scoreStr) : null;
       const isProfit     = document.querySelector('input[name="isProfit"]:checked').value === 'true';
       
-      const setLimit = (dataVal, displayVal) => {
+      const setTermAndLimit = (term, term_display, dataVal, displayVal) => {
+        payment_term = term;
+        payment_term_display = term_display;
         credit_limit_for_data = dataVal;
-        credit_limit_for_display = displayVal;
+        credit_limit_for_display = `JPY ${displayVal}`;
       };
 
       if (years >= 10) {
         if (capital >= 10000000) {
-          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('10000000', '10,000,000'); }
-          else if (isProfit) { payment_term = "末締め翌月末払い"; setLimit('3500000', '3,500,000'); }
-          else { payment_term = "30日（立替金は前払い）"; setLimit('1000000', '1,000,000'); }
+          if (score === null || score < 40) { setTermAndLimit("前払い", "Prepayment", '0', '0'); }
+          else if (score >= 51) { setTermAndLimit("末締め翌月末払い", "Closing at month-end, payment at the end of next month", '10000000', '10,000,000'); }
+          else if (isProfit) { setTermAndLimit("末締め翌月末払い", "Closing at month-end, payment at the end of next month", '3500000', '3,500,000'); }
+          else { setTermAndLimit("30日（立替金は前払い）", "30 Days (Disbursements are prepaid)", '1000000', '1,000,000'); }
         } else {
-          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('5000000', '5,000,000'); }
-          else if (isProfit) { payment_term = "30日"; setLimit('2000000', '2,000,000'); }
-          else { payment_term = "15日（立替金は前払い）"; setLimit('500000', '500,000'); }
+          if (score === null || score < 40) { setTermAndLimit("前払い", "Prepayment", '0', '0'); }
+          else if (score >= 51) { setTermAndLimit("末締め翌月末払い", "Closing at month-end, payment at the end of next month", '5000000', '5,000,000'); }
+          else if (isProfit) { setTermAndLimit("30日", "30 Days", '2000000', '2,000,000'); }
+          else { setTermAndLimit("15日（立替金は前払い）", "15 Days (Disbursements are prepaid)", '500000', '500,000'); }
         }
       } else {
         if (capital >= 10000000) {
-          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('5000000', '5,000,000'); }
-          else if (isProfit) { payment_term = "末締め翌月末払い"; setLimit('1000000', '1,000,000'); }
-          else { payment_term = "30日（立替金は前払い）"; setLimit('500000', '500,000'); }
+          if (score === null || score < 40) { setTermAndLimit("前払い", "Prepayment", '0', '0'); }
+          else if (score >= 51) { setTermAndLimit("末締め翌月末払い", "Closing at month-end, payment at the end of next month", '5000000', '5,000,000'); }
+          else if (isProfit) { setTermAndLimit("末締め翌月末払い", "Closing at month-end, payment at the end of next month", '1000000', '1,000,000'); }
+          else { setTermAndLimit("30日（立替金は前払い）", "30 Days (Disbursements are prepaid)", '500000', '500,000'); }
         } else {
-          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('1000000', '1,000,000'); }
-          else if (isProfit) { payment_term = "30日"; setLimit('1000000', '1,000,000'); }
-          else { payment_term = "7日（立替金は前払い）"; setLimit('500000', '500,000'); }
+          if (score === null || score < 40) { setTermAndLimit("前払い", "Prepayment", '0', '0'); }
+          else if (score >= 51) { setTermAndLimit("末締め翌月末払い", "Closing at month-end, payment at the end of next month", '1000000', '1,000,000'); }
+          else if (isProfit) { setTermAndLimit("30日", "30 Days", '1000000', '1,000,000'); }
+          else { setTermAndLimit("7日（立替金は前払い）", "7 Days (Disbursements are prepaid)", '500000', '500,000'); }
         }
       }
-    } else {
+    } else { // Other Regions
       const customerType = document.querySelector('input[name="customerType"]:checked');
       const salesPrice   = parseFloat(document.getElementById('salesPrice').value) || 0;
-      if (!customerType) { systemAlert("请为其他地区客户选择客户类型！"); calcButton.textContent = '计算'; calcButton.disabled = false; return; }
+      if (!customerType) { systemAlert("Please select a customer type for this region!"); calcButton.textContent = 'Calculate'; calcButton.disabled = false; return; }
       
       if (customerType.value === '直客') {
         let grade = 'C';
@@ -467,9 +468,9 @@
         else if (industry === "服装/小商品") { grade = regionLabel === "欧洲" ? "B" : "C"; }
         else if (industry === "贸易公司") { grade = regionLabel === "日企海外分公司(包括中国)" ? "A" : "C"; }
         
-        if (grade === "A") { credit_limit_for_data = '2000000'; credit_limit_for_display = 'JPY 2,000,000'; payment_term = salesPrice <= 100000 ? "30天账期(报价单盖章)" : "预付款"; }
-        else if (grade === "B") { credit_limit_for_data = '1350000'; credit_limit_for_display = 'JPY 1,350,000'; payment_term = salesPrice <= 70000  ? "15天账期(报价单盖章)" : "预付款"; }
-        else { credit_limit_for_data = '0'; credit_limit_for_display = 'JPY 0'; payment_term = "预付款(报价单盖章)"; }
+        if (grade === "A") { credit_limit_for_data = '2000000'; credit_limit_for_display = 'JPY 2,000,000'; payment_term = salesPrice <= 100000 ? "30天账期(报价单盖章)" : "预付款"; payment_term_display = salesPrice <= 100000 ? "30-day term (stamped quotation required)" : "Prepayment"; }
+        else if (grade === "B") { credit_limit_for_data = '1350000'; credit_limit_for_display = 'JPY 1,350,000'; payment_term = salesPrice <= 70000  ? "15天账期(报价单盖章)" : "预付款"; payment_term_display = salesPrice <= 70000 ? "15-day term (stamped quotation required)" : "Prepayment"; }
+        else { credit_limit_for_data = '0'; credit_limit_for_display = 'JPY 0'; payment_term = "预付款(报价单盖章)"; payment_term_display = "Prepayment (stamped quotation required)"; }
 
       } else { // Peer Forwarder
         const checkedOrgIds = ['orgWcaInter', 'orgX2', 'orgAlna', 'orgNap', 'orgWcaOther']
@@ -492,29 +493,31 @@
         
         if (limits.length > 0) {
           payment_term = "30日";
+          payment_term_display = "30 Days";
           const maxLimit = Math.max(...limits);
           credit_limit_for_data = maxLimit.toString();
-          credit_limit_for_display = `¥${maxLimit.toLocaleString()}`;
+          credit_limit_for_display = `JPY ${maxLimit.toLocaleString()}`;
         } else {
           const isPartner   = document.querySelector('input[name="isPartner"]:checked').value === 'yes';
           const hasContract = document.querySelector('input[name="hasContract"]:checked').value === 'yes';
 
           if (isPartner) {
             if (hasContract) {
-              credit_limit_for_data = "0"; credit_limit_for_display = "0";
-              payment_term = "30天";
-              showCustomAlert("计算结果为默认值，具体额度与账期将按签订的合同账期额度执行");
+              credit_limit_for_data = "0"; credit_limit_for_display = "JPY 0";
+              payment_term = "30天"; payment_term_display = "30 Days";
+              showCustomAlert("The result is a default value. The specific credit limit and payment term will be based on the signed contract.");
             } else { 
               payment_term = "次月月末";
+              payment_term_display = "End of next month";
               credit_limit_for_data = "2000000";
               credit_limit_for_display = "JPY 2,000,000";
             }
           } else { // Not a partner
-            const paidCap = parseFloat(document.getElementById('paidInCapital').value)   || 0;
+            const paidCap = parseFloat(document.getElementById('paidInCapital').value)    || 0;
             const regY    = parseFloat(document.getElementById('registrationYears').value) || 0;
 
-            if (paidCap >= 5000 && regY >= 10) { payment_term = "15天账期(报价单盖章)"; credit_limit_for_data = "1000000"; credit_limit_for_display = "JPY 1,000,000"; }
-            else { payment_term = "预付款(报价单盖章)"; credit_limit_for_data = "0"; credit_limit_for_display = "JPY 0"; }
+            if (paidCap >= 5000 && regY >= 10) { payment_term = "15天账期(报价单盖章)"; payment_term_display = "15-day term (stamped quotation required)"; credit_limit_for_data = "1000000"; credit_limit_for_display = "JPY 1,000,000"; }
+            else { payment_term = "预付款(报价单盖章)"; payment_term_display = "Prepayment (stamped quotation required)"; credit_limit_for_data = "0"; credit_limit_for_display = "JPY 0"; }
           }
         }
       }
@@ -534,14 +537,14 @@
     form.append('paidInCapital',    document.getElementById('paidInCapital')?.value || '');
     form.append('registrationYears',document.getElementById('registrationYears')?.value || '');
     form.append('membership',       (['orgX2','orgAlna','orgNap','orgWcaInter','orgWcaOther']
-                                  .map(id => document.getElementById(id))
-                                  .filter(cb => cb && cb.checked)
-                                  .map(cb => cb.value)
-                                  .join(',')));
+                                    .map(id => document.getElementById(id))
+                                    .filter(cb => cb && cb.checked)
+                                    .map(cb => cb.value)
+                                    .join(',')));
     form.append('blacklist',        document.querySelector('input[name="onBlacklist"]:checked')?.value || '');
     form.append('partner',          document.querySelector('input[name="isPartner"]:checked')?.value || '');
     form.append('contract',         document.querySelector('input[name="hasContract"]:checked')?.value || '');
-    form.append('paymentTerm',      payment_term);
+    form.append('paymentTerm',      payment_term); // Send original value
     form.append('creditLimit',      credit_limit_for_data);
     
     const gasUrl = 'https://script.google.com/macros/s/AKfycbyviuu84Klj_E94U0IngPmfHuept9CwdHB_Ry4J_Y-07H-z0_nt0mKfFuAw_6ffa3o/exec';
@@ -556,25 +559,25 @@
       const resultsDiv = document.getElementById('results');
 
       // Reset button
-      calcButton.textContent = '计算';
+      calcButton.textContent = 'Calculate';
       calcButton.disabled = false;
 
       if (result.status === 'success') {
-        document.getElementById('resultCreditLimit').innerHTML = `授信额度: <span>${credit_limit_for_display}</span>`;
-        document.getElementById('resultPaymentTerm').innerHTML   = `付款条件: <span>${payment_term}</span>`;
+        document.getElementById('resultCreditLimit').innerHTML = `Credit Limit: <span>${credit_limit_for_display}</span>`;
+        document.getElementById('resultPaymentTerm').innerHTML   = `Payment Term: <span>${payment_term_display}</span>`; // Use display value
         resultsDiv.classList.add('visible');
         document.getElementById('calculatorForm').classList.add('hidden');
         resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else if (result.status === 'duplicate') {
-        systemAlert('贵司已提交过，如需修改请联系我司负责人');
+        systemAlert('Your company has already submitted this form. To make changes, please contact our representative.');
       } else {
-        systemAlert('发生错误: ' + (result.message || '未知错误'));
+        systemAlert('An error occurred: ' + (result.message || 'Unknown error'));
       }
     })
     .catch(err => {
-      systemAlert('调用后端服务失败，请检查网络或联系管理员。');
+      systemAlert('Failed to contact the backend service. Please check your network or contact an administrator.');
       // Reset button
-      calcButton.textContent = '计算';
+      calcButton.textContent = 'Calculate';
       calcButton.disabled = false;
     });
   }
