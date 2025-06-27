@@ -184,6 +184,24 @@
         from { opacity: 0; transform: scale(0.95); }
         to { opacity: 1; transform: scale(1); }
     }
+    .confirmation-section {
+        margin-top: 25px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .confirmation-section input[type="checkbox"] {
+        width: auto;
+        height: auto;
+        margin-top: 5px;
+        flex-shrink: 0;
+    }
+    .confirmation-section label {
+        font-size: 0.8rem;
+        color: #555;
+        cursor: pointer;
+        line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -198,7 +216,6 @@
         <label class="section-title" for="primaryRegionSelect">1. 客户公司所在地域</label>
         <select id="primaryRegionSelect" onchange="toggleSectionsByRegion()">
           <option value="">-- 请选择 --</option>
-          <option value="日本">日本</option>
           <option value="欧洲">欧洲</option>
           <option value="中国">中国</option>
           <option value="日企海外分公司(包括中国)">日企海外分公司(包括中国)</option>
@@ -206,25 +223,7 @@
         </select>
       </div>
 
-      <div id="japanSection" class="form-section hidden">
-        <label class="section-title" for="establishmentYears">设立年数 (年)</label>
-        <input type="number" id="establishmentYears" placeholder="请输入公司成立年数">
-        <br><br>
-        <label class="section-title" for="capitalJpy">资本金 (万円)</label>
-        <input type="number" id="capitalJpy" placeholder="例如: 1000">
-        <br><br>
-        <label class="section-title" for="teikokuScore">帝国データバンク スコア (点)</label>
-        <input type="number" id="teikokuScore" placeholder="若无评分请留空">
-        <br><br>
-        <label class="section-title">前期决算</label>
-        <div class="radio-group">
-          <input type="radio" id="isProfitYes" name="isProfit" value="true" checked>
-          <label for="isProfitYes">黒字</label>
-          <input type="radio" id="isProfitNo" name="isProfit" value="false">
-          <label for="isProfitNo">赤字</label>
-        </div>
-      </div>
-
+      <!-- This section now handles all non-Japan regions -->
       <div id="otherRegionsSection" class="hidden">
         <div class="form-section">
           <label class="section-title">2. 客户类型</label>
@@ -235,69 +234,86 @@
             <label for="typePeer">同行</label>
           </div>
         </div>
+        
+        <div id="riskAndSubSections" class="hidden">
+            <div class="form-section">
+                <label class="section-title">3. 企业无风险且为存续状态</label>
+                <div class="radio-group">
+                    <input type="radio" id="isRiskFreeYes" name="isRiskFree" value="yes" checked>
+                    <label for="isRiskFreeYes">是</label>
+                    <input type="radio" id="isRiskFreeNo" name="isRiskFree" value="no">
+                    <label for="isRiskFreeNo">否</label>
+                </div>
+            </div>
 
-        <div id="directCustomerFields" class="form-section hidden">
-          <label class="section-title">公司性质 (行业)</label>
-          <select id="customerIndustry">
-            <option value="服装/小商品">服装/小商品</option>
-            <option value="电子部品">电子部品</option>
-            <option value="汽车及汽车配件">汽车及汽车配件</option>
-            <option value="贸易公司">贸易公司</option>
-            <option value="其他">其他</option>
-          </select>
-        </div>
-
-        <div id="peerForwarderFields" class="form-section hidden">
-          <label class="section-title">是否属于会员组织？</label>
-          <div class="checkbox-group">
-            <input type="checkbox" id="orgNone" value="none" checked>
-            <label for="orgNone">否</label>
-            <input type="checkbox" id="orgX2" value="X2">
-            <label for="orgX2">X2</label>
-            <input type="checkbox" id="orgAlna" value="ALNA">
-            <label for="orgAlna">ALNA</label>
-            <input type="checkbox" id="orgNap" value="NAP">
-            <label for="orgNap">NAP</label>
-            <input type="checkbox" id="orgWcaInter" value="WCA INTER GLOBAL/WCA Time Critical">
-            <label for="orgWcaInter">WCA INTER GLOBAL/WCA Time Critical</label>
-            <input type="checkbox" id="orgWcaOther" value="WCA OTHER">
-            <label for="orgWcaOther">WCA 其他组织</label>
-          </div>
-          <br>
-          <label class="section-title">若为会员，是否在黑名单内？</label>
-          <div class="radio-group">
-            <input type="radio" id="blacklistYes" name="onBlacklist" value="yes">
-            <label for="blacklistYes">是</label>
-            <input type="radio" id="blacklistNo" name="onBlacklist" value="no" checked>
-            <label for="blacklistNo">否</label>
-          </div>
-          <hr style="margin:24px 0;">
-          <label class="section-title">是否为OPTEC合作方？</label>
-          <div class="radio-group">
-            <input type="radio" id="partnerYes" name="isPartner" value="yes">
-            <label for="partnerYes">是</label>
-            <input type="radio" id="partnerNo" name="isPartner" value="no" checked>
-            <label for="partnerNo">否</label>
-          </div>
-          <br>
-          <label class="section-title">若为合作方，是否有合同？</label>
-          <div class="radio-group">
-            <input type="radio" id="contractYes" name="hasContract" value="yes">
-            <label for="contractYes">是</label>
-            <input type="radio" id="contractNo" name="hasContract" value="no" checked>
-            <label for="contractNo">否</label>
-          </div>
-          <hr style="margin:24px 0;">
-          <label class="section-title" for="paidInCapital">公司实缴资本 (CNY 万)</label>
-          <input type="number" id="paidInCapital" placeholder="例如: 5000">
-          <br><br>
-          <label class="section-title" for="registrationYears">公司注册年限</label>
-          <input type="number" id="registrationYears" placeholder="例如: 10">
+            <div id="directCustomerFields" class="form-section hidden">
+              <label class="section-title">公司性质 (行业)</label>
+              <select id="customerIndustry">
+                <option value="服装/小商品">服装/小商品</option>
+                <option value="电子部品">电子部品</option>
+                <option value="汽车及汽车配件">汽车及汽车配件</option>
+                <option value="贸易公司">贸易公司</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+    
+            <div id="peerForwarderFields" class="form-section hidden">
+              <label class="section-title">是否属于会员组织？</label>
+              <div class="checkbox-group">
+                <input type="checkbox" id="orgNone" value="none" checked>
+                <label for="orgNone">否</label>
+                <input type="checkbox" id="orgX2" value="X2">
+                <label for="orgX2">X2</label>
+                <input type="checkbox" id="orgAlna" value="ALNA">
+                <label for="orgAlna">ALNA</label>
+                <input type="checkbox" id="orgNap" value="NAP">
+                <label for="orgNap">NAP</label>
+                <input type="checkbox" id="orgWcaInter" value="WCA INTER GLOBAL/WCA Time Critical">
+                <label for="orgWcaInter">WCA INTER GLOBAL/WCA Time Critical</label>
+                <input type="checkbox" id="orgWcaOther" value="WCA OTHER">
+                <label for="orgWcaOther">WCA 其他组织</label>
+              </div>
+              <br>
+              <label class="section-title">若为会员，是否在黑名单内？</label>
+              <div class="radio-group">
+                <input type="radio" id="blacklistYes" name="onBlacklist" value="yes">
+                <label for="blacklistYes">是</label>
+                <input type="radio" id="blacklistNo" name="onBlacklist" value="no" checked>
+                <label for="blacklistNo">否</label>
+              </div>
+              <hr style="margin:24px 0;">
+              <label class="section-title">是否为OPTEC合作方？</label>
+              <div class="radio-group">
+                <input type="radio" id="partnerYes" name="isPartner" value="yes">
+                <label for="partnerYes">是</label>
+                <input type="radio" id="partnerNo" name="isPartner" value="no" checked>
+                <label for="partnerNo">否</label>
+              </div>
+              <br>
+              <label class="section-title">若为合作方，是否有合同？</label>
+              <div class="radio-group">
+                <input type="radio" id="contractYes" name="hasContract" value="yes">
+                <label for="contractYes">是</label>
+                <input type="radio" id="contractNo" name="hasContract" value="no" checked>
+                <label for="contractNo">否</label>
+              </div>
+              <hr style="margin:24px 0;">
+              <label class="section-title" for="paidInCapital">公司实缴资本 (CNY 万)</label>
+              <input type="number" id="paidInCapital" placeholder="例如: 5000">
+              <br><br>
+              <label class="section-title" for="registrationYears">公司注册年限</label>
+              <input type="number" id="registrationYears" placeholder="例如: 10">
+            </div>
         </div>
       </div>
 
       <input type="hidden" id="salesPrice">
       <button type="button" onclick="calculate()">计算</button>
+      
+      <div class="confirmation-section">
+          <input type="checkbox" id="confirmCheckbox" checked>
+          <label for="confirmCheckbox">声明并确认：所填写的所有信息均真实、准确、完整，如有不实，愿承担相应法律责任。</label>
+      </div>
     </form>
 
     <div id="results">
@@ -361,21 +377,30 @@
 
   function toggleSectionsByRegion() {
     const r = document.getElementById('primaryRegionSelect').value;
-    document.getElementById('japanSection').classList.add('hidden');
-    document.getElementById('otherRegionsSection').classList.add('hidden');
+    const otherRegionsSection = document.getElementById('otherRegionsSection');
+    // Hide results and reset form when region changes
     document.getElementById('results').classList.remove('visible');
-    if (r === '日本') {
-      document.getElementById('japanSection').classList.remove('hidden');
-    } else if (r) {
-      document.getElementById('otherRegionsSection').classList.remove('hidden');
+    
+    if (r) {
+        otherRegionsSection.classList.remove('hidden');
+        // Reset and hide sub-sections
+        document.getElementById('riskAndSubSections').classList.add('hidden');
+        document.getElementById('directCustomerFields').classList.add('hidden');
+        document.getElementById('peerForwarderFields').classList.add('hidden');
+        const customerTypeRadios = document.querySelectorAll('input[name="customerType"]');
+        customerTypeRadios.forEach(radio => radio.checked = false);
+    } else {
+        otherRegionsSection.classList.add('hidden');
     }
   }
 
   function toggleSubSections() {
     const typeInput = document.querySelector('input[name="customerType"]:checked');
     if (!typeInput) {
+      document.getElementById('riskAndSubSections').classList.add('hidden');
       return;
     }
+    document.getElementById('riskAndSubSections').classList.remove('hidden');
     const t = typeInput.value;
     document.getElementById('directCustomerFields').classList.add('hidden');
     document.getElementById('peerForwarderFields').classList.add('hidden');
@@ -392,6 +417,13 @@
   }
 
   function calculate() {
+    // 0. Check confirmation
+    const isConfirmed = document.getElementById('confirmCheckbox').checked;
+    if (!isConfirmed) {
+      systemAlert("请勾选下方的声明以继续。");
+      return;
+    }
+
     // 1. Basic validation
     const region = document.getElementById('primaryRegionSelect').value;
     if (!region) {
@@ -414,108 +446,73 @@
     let credit_limit_for_data = '0';
     let credit_limit_for_display = '0';
 
-    if (region === '日本') {
-      const years        = parseFloat(document.getElementById('establishmentYears').value) || 0;
-      const capitalInput = parseFloat(document.getElementById('capitalJpy').value)       || 0;
-      const capital      = capitalInput * 10000;
-      const scoreStr     = document.getElementById('teikokuScore').value;
-      const score        = scoreStr ? parseFloat(scoreStr) : null;
-      const isProfit     = document.querySelector('input[name="isProfit"]:checked').value === 'true';
+    const customerType = document.querySelector('input[name="customerType"]:checked');
+    const salesPrice   = parseFloat(document.getElementById('salesPrice').value) || 0;
+    if (!customerType) { 
+        systemAlert("请为客户选择客户类型！"); 
+        calcButton.textContent = '计算'; 
+        calcButton.disabled = false; 
+        return; 
+    }
+    
+    if (customerType.value === '直客') {
+      let grade = 'C';
+      const regionLabel = region === '其他地区' ? '其他' : region;
+      const industry    = document.getElementById('customerIndustry').value;
       
-      const setLimit = (dataVal, displayVal) => {
-        credit_limit_for_data = dataVal;
-        credit_limit_for_display = displayVal;
-      };
+      if (industry === "汽车及汽车配件") grade = "A";
+      else if (industry === "电子部品") { grade = regionLabel === "欧洲" ? "A" : regionLabel === "日企海外分公司(包括中国)" ? "B" : "C"; }
+      else if (industry === "服装/小商品") { grade = regionLabel === "欧洲" ? "B" : "C"; }
+      else if (industry === "贸易公司") { grade = regionLabel === "日企海外分公司(包括中国)" ? "A" : "C"; }
+      
+      if (grade === "A") { credit_limit_for_data = '2000000'; credit_limit_for_display = 'JPY 2,000,000'; payment_term = salesPrice <= 100000 ? "30天账期(报价单盖章)" : "预付款"; }
+      else if (grade === "B") { credit_limit_for_data = '1350000'; credit_limit_for_display = 'JPY 1,350,000'; payment_term = salesPrice <= 70000  ? "15天账期(报价单盖章)" : "预付款"; }
+      else { credit_limit_for_data = '0'; credit_limit_for_display = 'JPY 0'; payment_term = "预付款(报价单盖章)"; }
 
-      if (years >= 10) {
-        if (capital >= 10000000) {
-          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('10000000', '10,000,000'); }
-          else if (isProfit) { payment_term = "末締め翌月末払い"; setLimit('3500000', '3,500,000'); }
-          else { payment_term = "30日（立替金は前払い）"; setLimit('1000000', '1,000,000'); }
-        } else {
-          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('5000000', '5,000,000'); }
-          else if (isProfit) { payment_term = "30日"; setLimit('2000000', '2,000,000'); }
-          else { payment_term = "15日（立替金は前払い）"; setLimit('500000', '500,000'); }
-        }
-      } else {
-        if (capital >= 10000000) {
-          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('5000000', '5,000,000'); }
-          else if (isProfit) { payment_term = "末締め翌月末払い"; setLimit('1000000', '1,000,000'); }
-          else { payment_term = "30日（立替金は前払い）"; setLimit('500000', '500,000'); }
-        } else {
-          if (score === null || score < 40) { payment_term = "前払い"; setLimit('0', '0'); }
-          else if (score >= 51) { payment_term = "末締め翌月末払い"; setLimit('1000000', '1,000,000'); }
-          else if (isProfit) { payment_term = "30日"; setLimit('1000000', '1,000,000'); }
-          else { payment_term = "7日（立替金は前払い）"; setLimit('500000', '500,000'); }
-        }
+    } else { // Peer Forwarder
+      const checkedOrgIds = ['orgWcaInter', 'orgX2', 'orgAlna', 'orgNap', 'orgWcaOther']
+          .filter(id => {
+              const el = document.getElementById(id);
+              return el && el.checked;
+          });
+      
+      const limits = [];
+
+      if (checkedOrgIds.some(id => ['orgWcaInter', 'orgX2'].includes(id))) {
+          limits.push(13000000);
       }
-    } else {
-      const customerType = document.querySelector('input[name="customerType"]:checked');
-      const salesPrice   = parseFloat(document.getElementById('salesPrice').value) || 0;
-      if (!customerType) { systemAlert("请为其他地区客户选择客户类型！"); calcButton.textContent = '计算'; calcButton.disabled = false; return; }
+      if (checkedOrgIds.some(id => ['orgNap', 'orgWcaOther'].includes(id))) {
+          limits.push(6600000);
+      }
+      if (checkedOrgIds.includes('orgAlna')) {
+          limits.push(1000000);
+      }
       
-      if (customerType.value === '直客') {
-        let grade = 'C';
-        const regionLabel = region === '其他地区' ? '其他' : region;
-        const industry    = document.getElementById('customerIndustry').value;
-        
-        if (industry === "汽车及汽车配件") grade = "A";
-        else if (industry === "电子部品") { grade = regionLabel === "欧洲" ? "A" : regionLabel === "日企海外分公司(包括中国)" ? "B" : "C"; }
-        else if (industry === "服装/小商品") { grade = regionLabel === "欧洲" ? "B" : "C"; }
-        else if (industry === "贸易公司") { grade = regionLabel === "日企海外分公司(包括中国)" ? "A" : "C"; }
-        
-        if (grade === "A") { credit_limit_for_data = '2000000'; credit_limit_for_display = 'JPY 2,000,000'; payment_term = salesPrice <= 100000 ? "30天账期(报价单盖章)" : "预付款"; }
-        else if (grade === "B") { credit_limit_for_data = '1350000'; credit_limit_for_display = 'JPY 1,350,000'; payment_term = salesPrice <= 70000  ? "15天账期(报价单盖章)" : "预付款"; }
-        else { credit_limit_for_data = '0'; credit_limit_for_display = 'JPY 0'; payment_term = "预付款(报价单盖章)"; }
+      if (limits.length > 0) {
+        payment_term = "30日";
+        const maxLimit = Math.max(...limits);
+        credit_limit_for_data = maxLimit.toString();
+        credit_limit_for_display = `¥${maxLimit.toLocaleString()}`;
+      } else {
+        const isPartner   = document.querySelector('input[name="isPartner"]:checked').value === 'yes';
+        const hasContract = document.querySelector('input[name="hasContract"]:checked').value === 'yes';
 
-      } else { // Peer Forwarder
-        const checkedOrgIds = ['orgWcaInter', 'orgX2', 'orgAlna', 'orgNap', 'orgWcaOther']
-            .filter(id => {
-                const el = document.getElementById(id);
-                return el && el.checked;
-            });
-        
-        const limits = [];
-
-        if (checkedOrgIds.some(id => ['orgWcaInter', 'orgX2'].includes(id))) {
-            limits.push(13000000);
-        }
-        if (checkedOrgIds.some(id => ['orgNap', 'orgWcaOther'].includes(id))) {
-            limits.push(6600000);
-        }
-        if (checkedOrgIds.includes('orgAlna')) {
-            limits.push(1000000);
-        }
-        
-        if (limits.length > 0) {
-          payment_term = "30日";
-          const maxLimit = Math.max(...limits);
-          credit_limit_for_data = maxLimit.toString();
-          credit_limit_for_display = `¥${maxLimit.toLocaleString()}`;
-        } else {
-          const isPartner   = document.querySelector('input[name="isPartner"]:checked').value === 'yes';
-          const hasContract = document.querySelector('input[name="hasContract"]:checked').value === 'yes';
-
-          if (isPartner) {
-            if (hasContract) {
-              credit_limit_for_data = "0"; credit_limit_for_display = "0";
-              payment_term = "30天";
-              showCustomAlert("计算结果为默认值，具体额度与账期将按签订的合同账期额度执行");
-            } else { 
-              payment_term = "次月月末";
-              credit_limit_for_data = "2000000";
-              credit_limit_for_display = "JPY 2,000,000";
-            }
-          } else { // Not a partner
-            const paidCap = parseFloat(document.getElementById('paidInCapital').value)   || 0;
-            const regY    = parseFloat(document.getElementById('registrationYears').value) || 0;
-
-            if (paidCap >= 5000 && regY >= 10) { payment_term = "15天账期(报价单盖章)"; credit_limit_for_data = "1000000"; credit_limit_for_display = "JPY 1,000,000"; }
-            else { payment_term = "预付款(报价单盖章)"; credit_limit_for_data = "0"; credit_limit_for_display = "JPY 0"; }
+        if (isPartner) {
+          if (hasContract) {
+            credit_limit_for_data = "0"; credit_limit_for_display = "0";
+            payment_term = "30天";
+            showCustomAlert("计算结果为默认值，具体额度与账期将按签订的合同账期额度执行");
+          } else { 
+            payment_term = "次月月末";
+            credit_limit_for_data = "2000000";
+            credit_limit_for_display = "JPY 2,000,000";
           }
+        } else { // Not a partner
+          const paidCap = parseFloat(document.getElementById('paidInCapital').value)   || 0;
+          const regY    = parseFloat(document.getElementById('registrationYears').value) || 0;
+
+          if (paidCap >= 5000 && regY >= 10) { payment_term = "15天账期(报价单盖章)"; credit_limit_for_data = "1000000"; credit_limit_for_display = "JPY 1,000,000"; }
+          else { payment_term = "预付款(报价单盖章)"; credit_limit_for_data = "0"; credit_limit_for_display = "JPY 0"; }
         }
       }
     }
@@ -526,18 +523,15 @@
     form.append('companyName',      companyName);
     form.append('region',           region);
     form.append('customerType',     document.querySelector('input[name="customerType"]:checked')?.value || '');
+    form.append('isRiskFree',       document.querySelector('input[name="isRiskFree"]:checked')?.value || '');
     form.append('industry',         document.getElementById('customerIndustry')?.value || '');
-    form.append('establishmentYears',document.getElementById('establishmentYears')?.value || '');
-    form.append('capitalJpy',       document.getElementById('capitalJpy')?.value || '');
-    form.append('teikokuScore',     document.getElementById('teikokuScore')?.value || '');
-    form.append('isProfit',         document.querySelector('input[name="isProfit"]:checked')?.value || '');
     form.append('paidInCapital',    document.getElementById('paidInCapital')?.value || '');
     form.append('registrationYears',document.getElementById('registrationYears')?.value || '');
     form.append('membership',       (['orgX2','orgAlna','orgNap','orgWcaInter','orgWcaOther']
-                                  .map(id => document.getElementById(id))
-                                  .filter(cb => cb && cb.checked)
-                                  .map(cb => cb.value)
-                                  .join(',')));
+                                    .map(id => document.getElementById(id))
+                                    .filter(cb => cb && cb.checked)
+                                    .map(cb => cb.value)
+                                    .join(',')));
     form.append('blacklist',        document.querySelector('input[name="onBlacklist"]:checked')?.value || '');
     form.append('partner',          document.querySelector('input[name="isPartner"]:checked')?.value || '');
     form.append('contract',         document.querySelector('input[name="hasContract"]:checked')?.value || '');
