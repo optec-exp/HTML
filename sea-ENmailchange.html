@@ -335,11 +335,13 @@
       const recordId = document.getElementById('recordId').value;
       // 直接取【邮箱】栏的值作为 newEmail
       const emailToSubmit = document.getElementById('newEmail').value;
+      const caseNumber = document.getElementById('案件番号').value;
 
       // 使用 FormData 准备要提交的数据
       const data = new FormData();
       data.append('recordId', recordId);
       data.append('newEmail', emailToSubmit);
+      data.append('案件番号', caseNumber);
 
       // 显示加载中状态，隐藏表单
       document.getElementById('updateForm').style.display = 'none';
